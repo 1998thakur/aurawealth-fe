@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import clsx from 'clsx';
@@ -65,49 +65,97 @@ function CardSearchInput({
   excludeIds: string[];
 }) {
   const [query, setQuery] = useState('');
-  const [focused, setFocused] = useState(false);
+  const [debouncedQuery, setDebouncedQuery] = useState('');
+  const [open, setOpen] = useState(false);
+  const wrapperRef = useRef<HTMLDivElement>(null);
 
-  const { data } = useQuery({
-    queryKey: ['cards', 'search', query],
-    queryFn: () =>
-      cardsApi.getCards({ page: 0, size: 8 }),
-    enabled: focused,
+  // Debounce: wait 300ms after user stops typing
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedQuery(query), 300);
+    return () => clearTimeout(t);
+  }, [query]);
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (wrapperRef.current && !wrapperRef.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  const { data, isFetching } = useQuery({
+    queryKey: ['cards', 'search', debouncedQuery],
+    queryFn: () => cardsApi.getCards({ search: debouncedQuery || undefined, page: 0, size: 10 }),
+    enabled: open,
   });
 
-  const results = data?.items.filter(
-    (c) => !excludeIds.includes(c.id) && c.name.toLowerCase().includes(query.toLowerCase())
-  ) ?? [];
+  const results = (data?.items ?? []).filter((c) => !excludeIds.includes(c.id));
 
   return (
-    <div className="relative">
+    <div ref={wrapperRef} className="relative">
       <div className="relative">
         <span className="absolute left-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-on-surface-variant text-base">
           search
         </span>
         <input
           type="text"
-          placeholder="Search for a card..."
+          placeholder="Search by card name..."
           value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          onFocus={() => setFocused(true)}
-          onBlur={() => setTimeout(() => setFocused(false), 200)}
-          className="input-field pl-9"
+          onChange={(e) => { setQuery(e.target.value); setOpen(true); }}
+          onFocus={() => setOpen(true)}
+          className="input-field pl-9 pr-8"
         />
+        {isFetching && (
+          <span className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+        )}
       </div>
-      {focused && results.length > 0 && (
-        <div className="absolute top-full left-0 right-0 bg-surface-container-lowest border border-outline-variant rounded-xl shadow-lg z-50 mt-1 max-h-60 overflow-y-auto">
+
+      {open && (
+        <div className="absolute top-full left-0 right-0 bg-surface-container-lowest border border-outline-variant rounded-xl shadow-xl z-50 mt-1 max-h-72 overflow-y-auto">
+          {results.length === 0 && !isFetching && (
+            <div className="px-4 py-6 text-center">
+              <span className="material-symbols-outlined text-2xl text-on-surface-variant block mb-1">search_off</span>
+              <p className="font-body text-sm text-on-surface-variant">
+                {debouncedQuery ? `No cards matching "${debouncedQuery}"` : 'No cards available'}
+              </p>
+            </div>
+          )}
           {results.map((card) => (
             <button
               key={card.id}
-              onMouseDown={() => onSelect(card.id)}
-              className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-surface-container transition-colors text-left"
+              onMouseDown={() => { onSelect(card.id); setQuery(''); setOpen(false); }}
+              className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-surface-container transition-colors text-left border-b border-outline-variant/50 last:border-0"
             >
-              <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center shrink-0">
-                <span className="material-symbols-outlined text-on-primary text-sm">credit_card</span>
+              {/* Card thumbnail */}
+              <div className="w-14 shrink-0">
+                {card.cardImageThumbnailUrl ? (
+                  <img
+                    src={card.cardImageThumbnailUrl}
+                    alt={card.name}
+                    className="w-full h-auto rounded-lg object-contain bg-white"
+                  />
+                ) : (
+                  <div className="w-14 h-9 bg-primary/10 rounded-lg flex items-center justify-center">
+                    <span className="material-symbols-outlined text-primary text-sm">credit_card</span>
+                  </div>
+                )}
               </div>
-              <div>
-                <p className="font-body text-sm font-medium text-on-surface">{card.name}</p>
-                <p className="font-body text-xs text-on-surface-variant">{card.issuer.name}</p>
+              {/* Info */}
+              <div className="flex-1 min-w-0">
+                <p className="font-body text-sm font-semibold text-on-surface truncate">{card.name}</p>
+                <p className="font-body text-xs text-on-surface-variant truncate">{card.issuer.name}</p>
+              </div>
+              {/* Fee + tier */}
+              <div className="shrink-0 text-right">
+                <p className="font-headline font-bold text-xs text-on-surface">
+                  {card.annualFee === 0 ? 'FREE' : formatInr(card.annualFee)}
+                </p>
+                <p className="font-body text-xs text-on-surface-variant capitalize">
+                  {card.tier.replace('_', ' ').toLowerCase()}
+                </p>
               </div>
             </button>
           ))}

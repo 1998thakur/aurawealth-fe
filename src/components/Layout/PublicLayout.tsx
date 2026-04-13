@@ -61,6 +61,18 @@ export default function PublicLayout({ children }: PublicLayoutProps) {
               >
                 Compare Cards
               </NavLink>
+              <NavLink
+                to="/blog"
+                className={({ isActive }) =>
+                  `font-body text-sm font-medium px-4 py-2 rounded-xl transition-colors ${
+                    isActive
+                      ? 'text-primary bg-primary-fixed/30'
+                      : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container'
+                  }`
+                }
+              >
+                Blog
+              </NavLink>
             </nav>
 
             {/* Right CTA */}
@@ -135,6 +147,14 @@ export default function PublicLayout({ children }: PublicLayoutProps) {
                   Company
                 </p>
                 <ul className="space-y-2">
+                  <li>
+                    <Link
+                      to="/blog"
+                      className="font-body text-sm text-inverse-on-surface/60 hover:text-inverse-on-surface transition-colors"
+                    >
+                      Blog
+                    </Link>
+                  </li>
                   {['About', 'Privacy Policy', 'Terms of Service', 'Contact'].map((label) => (
                     <li key={label}>
                       <span className="font-body text-sm text-inverse-on-surface/60 cursor-default">

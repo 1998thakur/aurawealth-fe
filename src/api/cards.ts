@@ -30,6 +30,7 @@ export const cardsApi = {
     if (params.hasLoungeAccess !== undefined) {
       searchParams.set('hasLoungeAccess', String(params.hasLoungeAccess));
     }
+    if (params.search) searchParams.set('search', params.search);
     if (params.sort) searchParams.set('sort', params.sort);
     if (params.page !== undefined) searchParams.set('page', String(params.page));
     if (params.size !== undefined) searchParams.set('size', String(params.size));

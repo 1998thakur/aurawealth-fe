@@ -88,6 +88,7 @@ export interface CardListParams {
   annualFeeMax?: number;
   annualFeeMin?: number;
   hasLoungeAccess?: boolean;
+  search?: string;
   sort?: string;
   page?: number;
   size?: number;

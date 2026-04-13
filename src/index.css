@@ -81,6 +81,42 @@
   .tier-badge-super_premium {
     @apply bg-amber-100 text-amber-700 text-xs font-semibold px-2 py-0.5 rounded-full;
   }
+
+  .btn-secondary {
+    @apply bg-surface-container text-on-surface font-body font-semibold rounded-xl
+           hover:bg-surface-container-high transition-colors duration-200 focus:outline-none
+           focus:ring-2 focus:ring-primary-fixed focus:ring-offset-2 disabled:opacity-50
+           disabled:cursor-not-allowed;
+  }
+
+  /* Blog article content styles */
+  .blog-content p {
+    @apply text-on-surface-variant leading-relaxed mb-4;
+  }
+  .blog-content h2 {
+    @apply font-headline font-bold text-on-surface text-2xl mb-3 mt-8;
+  }
+  .blog-content h3 {
+    @apply font-headline font-bold text-on-surface text-xl mb-2 mt-6;
+  }
+  .blog-content ul {
+    @apply list-disc ml-6 mb-4 space-y-1;
+  }
+  .blog-content ol {
+    @apply list-decimal ml-6 mb-4 space-y-1;
+  }
+  .blog-content li {
+    @apply text-on-surface-variant leading-relaxed;
+  }
+  .blog-content strong {
+    @apply text-on-surface font-semibold;
+  }
+  .blog-content a {
+    @apply text-primary underline hover:no-underline;
+  }
+  .blog-content p.lead {
+    @apply text-lg text-on-surface leading-relaxed font-medium mb-6;
+  }
 }
 
 @layer utilities {
