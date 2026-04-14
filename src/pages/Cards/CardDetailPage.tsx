@@ -9,6 +9,7 @@ import { cardsApi } from '../../api/cards';
 import { expenseApi } from '../../api/expense';
 import { formatInr, formatNumber } from '../../utils/format';
 import type { CardTier, RewardRule } from '../../types/cards';
+import { useSeoMeta, injectJsonLd, removeJsonLd } from '../../hooks/useSeoMeta';
 
 type Tab = 'overview' | 'calculator' | 'profit';
 
@@ -126,6 +127,53 @@ export default function CardDetailPage() {
       setSpends(prefilled);
     }
   }, [activeProfile]);
+
+  useSeoMeta({
+    title: card
+      ? `${card.name} — Review, Rewards & Benefits | CreditBrain`
+      : 'Credit Card Details | CreditBrain',
+    description: card
+      ? `${card.name} by ${card.issuer.name}. Annual fee ₹${card.annualFee.toLocaleString('en-IN')}. ${card.tagline || 'Calculate your rewards and see if this card is right for your spending.'}`
+      : 'Detailed credit card review with rewards calculator.',
+    keywords: card
+      ? `${card.name}, ${card.issuer.name} credit card, ${card.name} review, ${card.name} rewards, ${card.name} benefits`
+      : undefined,
+    ogType: 'website',
+    canonical: card ? `https://credbrain.in/cards/${card.id}` : undefined,
+    ogUrl: card ? `https://credbrain.in/cards/${card.id}` : undefined,
+    ogImage: card?.cardImageUrl ?? undefined,
+  });
+
+  useEffect(() => {
+    if (!card) return;
+    injectJsonLd('breadcrumb-card-detail', {
+      '@context': 'https://schema.org',
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://credbrain.in/' },
+        { '@type': 'ListItem', position: 2, name: 'Credit Cards', item: 'https://credbrain.in/cards' },
+        { '@type': 'ListItem', position: 3, name: card.name, item: `https://credbrain.in/cards/${card.id}` },
+      ],
+    });
+    injectJsonLd('card-product', {
+      '@context': 'https://schema.org',
+      '@type': 'Product',
+      name: card.name,
+      description: card.tagline || `${card.name} credit card by ${card.issuer.name}`,
+      image: card.cardImageUrl,
+      brand: { '@type': 'Brand', name: card.issuer.name },
+      offers: {
+        '@type': 'Offer',
+        price: card.annualFee,
+        priceCurrency: 'INR',
+        availability: 'https://schema.org/InStock',
+      },
+    });
+    return () => {
+      removeJsonLd('breadcrumb-card-detail');
+      removeJsonLd('card-product');
+    };
+  }, [card]);
 
   const rewards = card
     ? computeRewards(card.rewardRules ?? [], spends, card.pointValueInr, card.annualFee)

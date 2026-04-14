@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import clsx from 'clsx';
@@ -7,6 +7,7 @@ import CardGradient from '../../components/CardGradient';
 import { cardsApi } from '../../api/cards';
 import type { CardSummary, CardTier, RewardType } from '../../types/cards';
 import { formatInr } from '../../utils/format';
+import { useSeoMeta, injectJsonLd, removeJsonLd } from '../../hooks/useSeoMeta';
 
 const TIER_BADGES: Record<CardTier, string> = {
   ENTRY: 'tier-badge-entry',
@@ -117,6 +118,28 @@ function SkeletonCard() {
 }
 
 export default function CardCatalogPage() {
+  useSeoMeta({
+    title: 'Best Credit Cards in India 2024 — Compare & Find Your Card',
+    description:
+      'Browse and compare 75+ credit cards in India. Filter by tier, reward type, annual fee, and lounge access. Find the best cashback, travel, and reward points cards.',
+    keywords:
+      'best credit cards India 2024, compare credit cards India, cashback credit cards, travel credit cards, no annual fee credit cards, lounge access credit cards, top credit cards India',
+    canonical: 'https://credbrain.in/cards',
+    ogUrl: 'https://credbrain.in/cards',
+  });
+
+  useEffect(() => {
+    injectJsonLd('breadcrumb-cards', {
+      '@context': 'https://schema.org',
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://credbrain.in/' },
+        { '@type': 'ListItem', position: 2, name: 'Credit Cards', item: 'https://credbrain.in/cards' },
+      ],
+    });
+    return () => removeJsonLd('breadcrumb-cards');
+  }, []);
+
   const [selectedTiers, setSelectedTiers] = useState<CardTier[]>([]);
   const [selectedRewardTypes, setSelectedRewardTypes] = useState<RewardType[]>([]);
   const [feeMax, setFeeMax] = useState(20000);

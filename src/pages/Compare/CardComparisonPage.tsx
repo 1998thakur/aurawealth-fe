@@ -7,6 +7,7 @@ import CardGradient from '../../components/CardGradient';
 import { cardsApi } from '../../api/cards';
 import { formatInr } from '../../utils/format';
 import type { CardDetail, CardTier } from '../../types/cards';
+import { useSeoMeta } from '../../hooks/useSeoMeta';
 
 const TIER_BADGES: Record<CardTier, string> = {
   ENTRY: 'tier-badge-entry',
@@ -235,6 +236,16 @@ function CardSlot({
 }
 
 export default function CardComparisonPage() {
+  useSeoMeta({
+    title: 'Compare Credit Cards India — Side-by-Side Card Comparison',
+    description:
+      'Compare up to 3 Indian credit cards side-by-side. See rewards, annual fees, lounge access, forex charges, and net annual value — all in one view.',
+    keywords:
+      'compare credit cards India, credit card comparison tool, best credit card comparison, HDFC vs Axis credit card, credit card side by side comparison India',
+    canonical: 'https://credbrain.in/compare',
+    ogUrl: 'https://credbrain.in/compare',
+  });
+
   const [searchParams, setSearchParams] = useSearchParams();
   const [cardIds, setCardIds] = useState<(string | null)[]>(() => {
     const ids = searchParams.get('cards')?.split(',').filter(Boolean) ?? [];

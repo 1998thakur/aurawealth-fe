@@ -125,7 +125,7 @@ export default function AuthPage() {
           <div className="w-10 h-10 bg-on-primary rounded-2xl flex items-center justify-center">
             <span className="material-symbols-outlined text-primary text-xl">diamond</span>
           </div>
-          <span className="font-headline font-bold text-2xl text-on-primary">AuraWealth</span>
+          <span className="font-headline font-bold text-2xl text-on-primary">CreditBrain</span>
         </div>
 
         <div className="bg-surface-container-lowest rounded-3xl shadow-2xl overflow-hidden">

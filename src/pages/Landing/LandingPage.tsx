@@ -1,6 +1,7 @@
-
+import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import PublicLayout from '../../components/Layout/PublicLayout';
+import { useSeoMeta, injectJsonLd, removeJsonLd } from '../../hooks/useSeoMeta';
 
 const BENTO_ITEMS = [
   {
@@ -68,6 +69,81 @@ const STATS = [
 ];
 
 export default function LandingPage() {
+  useSeoMeta({
+    title: 'CreditBrain — Find Your Perfect Credit Card in India',
+    description:
+      'Get personalized credit card recommendations based on your spending. Compare 75+ Indian credit cards, calculate rewards, and earn ₹50,000+ more every year. 100% free.',
+    keywords:
+      'best credit card India 2024, credit card recommendations, credit card comparison India, reward points credit card, cashback credit card India, travel credit card India, airport lounge access credit card',
+    ogType: 'website',
+    canonical: 'https://credbrain.in/',
+    ogUrl: 'https://credbrain.in/',
+  });
+
+  useEffect(() => {
+    injectJsonLd('organization', {
+      '@context': 'https://schema.org',
+      '@type': 'Organization',
+      name: 'CreditBrain',
+      url: 'https://credbrain.in',
+      logo: 'https://credbrain.in/favicon.svg',
+      description: "India's smartest credit card advisor",
+      sameAs: [],
+    });
+
+    injectJsonLd('website', {
+      '@context': 'https://schema.org',
+      '@type': 'WebSite',
+      name: 'CreditBrain',
+      url: 'https://credbrain.in',
+      potentialAction: {
+        '@type': 'SearchAction',
+        target: {
+          '@type': 'EntryPoint',
+          urlTemplate: 'https://credbrain.in/cards?search={search_term_string}',
+        },
+        'query-input': 'required name=search_term_string',
+      },
+    });
+
+    injectJsonLd('faq', {
+      '@context': 'https://schema.org',
+      '@type': 'FAQPage',
+      mainEntity: [
+        {
+          '@type': 'Question',
+          name: 'Which credit card is best in India?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'The best credit card in India depends on your spending habits. CreditBrain analyzes 75+ cards and recommends the one that earns you the most based on your actual monthly spend across travel, dining, shopping, and more.',
+          },
+        },
+        {
+          '@type': 'Question',
+          name: 'How do I compare credit cards in India?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'Use CreditBrain\'s free card comparison tool to compare up to 3 credit cards side-by-side on rewards, annual fees, lounge access, and net annual value.',
+          },
+        },
+        {
+          '@type': 'Question',
+          name: 'Which credit card gives the most reward points in India?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'Cards like HDFC Infinia, Axis Magnus, and ICICI Emeralde typically offer the highest reward rates. However, the best card for reward points depends on your spending categories. Use CreditBrain\'s rewards calculator to find your top earner.',
+          },
+        },
+      ],
+    });
+
+    return () => {
+      removeJsonLd('organization');
+      removeJsonLd('website');
+      removeJsonLd('faq');
+    };
+  }, []);
+
   return (
     <PublicLayout>
       {/* Hero */}

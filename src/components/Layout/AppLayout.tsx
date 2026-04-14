@@ -42,7 +42,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
             <div className="w-7 h-7 bg-primary rounded-lg flex items-center justify-center">
               <span className="material-symbols-outlined text-on-primary text-base">diamond</span>
             </div>
-            <span className="font-headline font-bold text-primary">AuraWealth</span>
+            <span className="font-headline font-bold text-primary">CreditBrain</span>
           </div>
         </header>
 

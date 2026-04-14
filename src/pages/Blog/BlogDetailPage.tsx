@@ -103,13 +103,13 @@ export default function BlogDetailPage() {
 
   // SEO meta
   useSeoMeta({
-    title: post?.metaTitle || post?.title || 'AuraWealth Blog',
+    title: post?.metaTitle || post?.title || 'CreditBrain Blog',
     description: post?.metaDescription || post?.excerpt,
     ogTitle: post?.metaTitle || post?.title,
     ogDescription: post?.metaDescription || post?.excerpt,
     ogImage: post?.coverImageUrl,
     ogType: 'article',
-    canonical: post ? `https://aurawealth.in/blog/${post.slug}` : undefined,
+    canonical: post ? `https://credbrain.in/blog/${post.slug}` : undefined,
   });
 
   // JSON-LD structured data
@@ -130,14 +130,14 @@ export default function BlogDetailPage() {
       },
       publisher: {
         '@type': 'Organization',
-        name: 'AuraWealth',
-        url: 'https://aurawealth.in',
+        name: 'CreditBrain',
+        url: 'https://credbrain.in',
       },
       datePublished: post.publishedAt,
       dateModified: post.createdAt,
       mainEntityOfPage: {
         '@type': 'WebPage',
-        '@id': `https://aurawealth.in/blog/${post.slug}`,
+        '@id': `https://credbrain.in/blog/${post.slug}`,
       },
     });
     document.head.appendChild(script);
@@ -270,7 +270,7 @@ export default function BlogDetailPage() {
             Find Your Best Credit Card
           </h2>
           <p className="font-body text-on-surface-variant mb-6 max-w-md mx-auto">
-            Enter your spending habits and AuraWealth will recommend the card that earns you the most rewards.
+            Enter your spending habits and CreditBrain will recommend the card that earns you the most rewards.
           </p>
           <Link to="/expense-profiler" className="btn-primary inline-block px-8 py-3">
             Get My Personalised Recommendation

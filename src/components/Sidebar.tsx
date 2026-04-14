@@ -38,7 +38,7 @@ export default function Sidebar({ onClose }: SidebarProps) {
         <div className="w-8 h-8 bg-primary rounded-xl flex items-center justify-center">
           <span className="material-symbols-outlined text-on-primary text-lg">diamond</span>
         </div>
-        <span className="font-headline font-bold text-lg text-primary">AuraWealth</span>
+        <span className="font-headline font-bold text-lg text-primary">CreditBrain</span>
         {onClose && (
           <button
             onClick={onClose}

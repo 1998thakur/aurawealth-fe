@@ -1,0 +1,17 @@
+{
+  "name": "CreditBrain",
+  "short_name": "CreditBrain",
+  "description": "India's smartest credit card advisor — find cards that earn you the most.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f9f9fe",
+  "theme_color": "#003358",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

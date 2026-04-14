@@ -1,0 +1,28 @@
+# CreditBrain — robots.txt
+# https://credbrain.in
+
+User-agent: *
+Allow: /
+
+# Block authenticated/private routes
+Disallow: /dashboard
+Disallow: /dashboard/
+Disallow: /settings
+Disallow: /settings/
+Disallow: /auth
+Disallow: /auth/
+
+# Block internal API
+Disallow: /api/
+
+# Allow important public paths explicitly
+Allow: /cards
+Allow: /cards/
+Allow: /blog
+Allow: /blog/
+Allow: /compare
+Allow: /simulator
+Allow: /expense-profiler
+
+# Sitemap location
+Sitemap: https://credbrain.in/sitemap.xml

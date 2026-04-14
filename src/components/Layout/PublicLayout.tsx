@@ -20,7 +20,7 @@ export default function PublicLayout({ children }: PublicLayoutProps) {
               <div className="w-8 h-8 bg-primary rounded-xl flex items-center justify-center">
                 <span className="material-symbols-outlined text-on-primary text-lg">diamond</span>
               </div>
-              <span className="font-headline font-bold text-lg text-primary">AuraWealth</span>
+              <span className="font-headline font-bold text-lg text-primary">CreditBrain</span>
             </Link>
 
             {/* Center nav links */}
@@ -112,7 +112,7 @@ export default function PublicLayout({ children }: PublicLayoutProps) {
                   <span className="material-symbols-outlined text-primary text-base">diamond</span>
                 </div>
                 <span className="font-headline font-bold text-base text-inverse-on-surface">
-                  AuraWealth
+                  CreditBrain
                 </span>
               </div>
               <p className="font-body text-sm text-inverse-on-surface/60 max-w-xs">
@@ -168,7 +168,7 @@ export default function PublicLayout({ children }: PublicLayoutProps) {
           </div>
           <div className="border-t border-inverse-on-surface/20 mt-8 pt-6 text-center">
             <p className="font-body text-xs text-inverse-on-surface/40">
-              © {new Date().getFullYear()} AuraWealth. All rights reserved.
+              © {new Date().getFullYear()} CreditBrain. All rights reserved.
             </p>
           </div>
         </div>

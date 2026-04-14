@@ -88,7 +88,7 @@ export default function DashboardPage() {
           {greeting}, {firstName} 👋
         </h1>
         <p className="font-body text-on-surface-variant text-sm">
-          Here's your AuraWealth summary for today.
+          Here's your CreditBrain summary for today.
         </p>
       </div>
 

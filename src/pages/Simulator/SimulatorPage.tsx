@@ -9,6 +9,7 @@ import { cardsApi } from '../../api/cards';
 import { expenseApi } from '../../api/expense';
 import { formatInr, formatNumber } from '../../utils/format';
 import type { CardDetail, CardSummary, RewardRule } from '../../types/cards';
+import { useSeoMeta, injectJsonLd, removeJsonLd } from '../../hooks/useSeoMeta';
 
 interface SpendCategory {
   id: string;
@@ -340,6 +341,30 @@ function ResultPanel({ card, result, spends, label }: ResultPanelProps) {
 }
 
 export default function SimulatorPage() {
+  useSeoMeta({
+    title: 'Credit Card Rewards Calculator India — Compare Earnings',
+    description:
+      'Calculate and compare credit card reward earnings for any spending pattern. See exactly how many points, cashback, or miles you earn per month with 75+ Indian credit cards.',
+    keywords:
+      'credit card rewards calculator India, credit card points calculator, cashback calculator, compare credit card rewards, credit card earnings calculator India',
+    canonical: 'https://credbrain.in/simulator',
+    ogUrl: 'https://credbrain.in/simulator',
+  });
+
+  useEffect(() => {
+    injectJsonLd('simulator-app', {
+      '@context': 'https://schema.org',
+      '@type': 'SoftwareApplication',
+      name: 'CreditBrain Rewards Calculator',
+      applicationCategory: 'FinanceApplication',
+      operatingSystem: 'Web',
+      description: 'Free tool to calculate and compare credit card reward earnings for Indian cards.',
+      offers: { '@type': 'Offer', price: '0', priceCurrency: 'INR' },
+      url: 'https://credbrain.in/simulator',
+    });
+    return () => removeJsonLd('simulator-app');
+  }, []);
+
   const [cardId1, setCardId1] = useState<string | null>(null);
   const [cardId2, setCardId2] = useState<string | null>(null);
   const [showCompare, setShowCompare] = useState(false);

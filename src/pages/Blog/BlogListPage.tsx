@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import PublicLayout from '../../components/Layout/PublicLayout';
 import { blogApi } from '../../api/blog';
 import type { BlogSummary } from '../../types/blog';
+import { useSeoMeta } from '../../hooks/useSeoMeta';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -152,6 +153,17 @@ function FeaturedCard({ post }: { post: BlogSummary }) {
 // ─── Main page ────────────────────────────────────────────────────────────────
 
 export default function BlogListPage() {
+  useSeoMeta({
+    title: 'Credit Card Tips, Guides & Comparisons — CreditBrain Blog',
+    description:
+      'Expert guides on the best credit cards in India, reward optimization strategies, card comparisons, and tips to maximize cashback and travel benefits.',
+    keywords:
+      'credit card blog India, credit card tips India, best credit card guides, reward points tips, credit card cashback tips, travel card India guide',
+    canonical: 'https://credbrain.in/blog',
+    ogUrl: 'https://credbrain.in/blog',
+    ogType: 'website',
+  });
+
   const [activeCategory, setActiveCategory] = useState<Category>('All');
   const [page, setPage] = useState(0);
   const [allPosts, setAllPosts] = useState<BlogSummary[]>([]);
@@ -198,7 +210,7 @@ export default function BlogListPage() {
       <section className="bg-gradient-to-br from-primary/10 via-surface to-surface-container py-16 px-4">
         <div className="max-w-4xl mx-auto text-center">
           <p className="font-body text-sm font-semibold uppercase tracking-widest text-primary mb-3">
-            AuraWealth Blog
+            CreditBrain Blog
           </p>
           <h1 className="font-headline font-bold text-4xl md:text-5xl text-on-surface mb-4">
             Your Guide to Smarter Credit Cards
