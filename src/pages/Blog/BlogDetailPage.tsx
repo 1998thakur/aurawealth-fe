@@ -141,10 +141,10 @@ export default function BlogDetailPage() {
       publisher: {
         '@type': 'Organization',
         name: 'CreditBrain',
-        url: '${SITE_URL}',
+        url: `${SITE_URL}`,
         logo: {
           '@type': 'ImageObject',
-          url: '${SITE_URL}/logo.png',
+          url: `${SITE_URL}/logo.png`,
         },
       },
       datePublished: post.publishedAt,
@@ -161,8 +161,8 @@ export default function BlogDetailPage() {
   useEffect(() => {
     if (!post) return;
     const items: object[] = [
-      { '@type': 'ListItem', position: 1, name: 'Home',  item: '${SITE_URL}' },
-      { '@type': 'ListItem', position: 2, name: 'Blog',  item: '${SITE_URL}/blog' },
+      { '@type': 'ListItem', position: 1, name: 'Home',  item: `${SITE_URL}` },
+      { '@type': 'ListItem', position: 2, name: 'Blog',  item: `${SITE_URL}/blog` },
     ];
     if (post.category) {
       items.push({

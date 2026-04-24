@@ -243,8 +243,8 @@ export default function CardComparisonPage() {
       'Compare up to 3 Indian credit cards side-by-side. See rewards, annual fees, lounge access, forex charges, and net annual value — all in one view.',
     keywords:
       'compare credit cards India, credit card comparison tool, best credit card comparison, HDFC vs Axis credit card, credit card side by side comparison India',
-    canonical: '${SITE_URL}/compare',
-    ogUrl: '${SITE_URL}/compare',
+    canonical: `${SITE_URL}/compare`,
+    ogUrl: `${SITE_URL}/compare`,
   });
 
   const [searchParams, setSearchParams] = useSearchParams();

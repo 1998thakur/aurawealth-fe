@@ -348,8 +348,8 @@ export default function SimulatorPage() {
       'Calculate and compare credit card reward earnings for any spending pattern. See exactly how many points, cashback, or miles you earn per month with 75+ Indian credit cards.',
     keywords:
       'credit card rewards calculator India, credit card points calculator, cashback calculator, compare credit card rewards, credit card earnings calculator India',
-    canonical: '${SITE_URL}/simulator',
-    ogUrl: '${SITE_URL}/simulator',
+    canonical: `${SITE_URL}/simulator`,
+    ogUrl: `${SITE_URL}/simulator`,
   });
 
   useEffect(() => {
@@ -361,7 +361,7 @@ export default function SimulatorPage() {
       operatingSystem: 'Web',
       description: 'Free tool to calculate and compare credit card reward earnings for Indian cards.',
       offers: { '@type': 'Offer', price: '0', priceCurrency: 'INR' },
-      url: '${SITE_URL}/simulator',
+      url: `${SITE_URL}/simulator`,
     });
     return () => removeJsonLd('simulator-app');
   }, []);

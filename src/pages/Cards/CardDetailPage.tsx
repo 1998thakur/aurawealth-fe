@@ -151,8 +151,8 @@ export default function CardDetailPage() {
       '@context': 'https://schema.org',
       '@type': 'BreadcrumbList',
       itemListElement: [
-        { '@type': 'ListItem', position: 1, name: 'Home', item: '${SITE_URL}/' },
-        { '@type': 'ListItem', position: 2, name: 'Credit Cards', item: '${SITE_URL}/cards' },
+        { '@type': 'ListItem', position: 1, name: 'Home', item: `${SITE_URL}/` },
+        { '@type': 'ListItem', position: 2, name: 'Credit Cards', item: `${SITE_URL}/cards` },
         { '@type': 'ListItem', position: 3, name: card.name, item: `${SITE_URL}/cards/${card.id}` },
       ],
     });

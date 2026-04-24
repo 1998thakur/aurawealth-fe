@@ -125,8 +125,8 @@ export default function CardCatalogPage() {
       'Browse and compare 75+ credit cards in India. Filter by tier, reward type, annual fee, and lounge access. Find the best cashback, travel, and reward points cards.',
     keywords:
       'best credit cards India 2024, compare credit cards India, cashback credit cards, travel credit cards, no annual fee credit cards, lounge access credit cards, top credit cards India',
-    canonical: '${SITE_URL}/cards',
-    ogUrl: '${SITE_URL}/cards',
+    canonical: `${SITE_URL}/cards`,
+    ogUrl: `${SITE_URL}/cards`,
   });
 
   useEffect(() => {
@@ -134,8 +134,8 @@ export default function CardCatalogPage() {
       '@context': 'https://schema.org',
       '@type': 'BreadcrumbList',
       itemListElement: [
-        { '@type': 'ListItem', position: 1, name: 'Home', item: '${SITE_URL}/' },
-        { '@type': 'ListItem', position: 2, name: 'Credit Cards', item: '${SITE_URL}/cards' },
+        { '@type': 'ListItem', position: 1, name: 'Home', item: `${SITE_URL}/` },
+        { '@type': 'ListItem', position: 2, name: 'Credit Cards', item: `${SITE_URL}/cards` },
       ],
     });
     return () => removeJsonLd('breadcrumb-cards');

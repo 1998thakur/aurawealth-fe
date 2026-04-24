@@ -77,8 +77,8 @@ export default function LandingPage() {
     keywords:
       'best credit card India 2024, credit card recommendations, credit card comparison India, reward points credit card, cashback credit card India, travel credit card India, airport lounge access credit card',
     ogType: 'website',
-    canonical: '${SITE_URL}/',
-    ogUrl: '${SITE_URL}/',
+    canonical: `${SITE_URL}/`,
+    ogUrl: `${SITE_URL}/`,
   });
 
   useEffect(() => {
@@ -86,8 +86,8 @@ export default function LandingPage() {
       '@context': 'https://schema.org',
       '@type': 'Organization',
       name: 'CreditBrain',
-      url: '${SITE_URL}',
-      logo: '${SITE_URL}/favicon.svg',
+      url: `${SITE_URL}`,
+      logo: `${SITE_URL}/favicon.svg`,
       description: "India's smartest credit card advisor",
       sameAs: [],
     });
@@ -96,12 +96,12 @@ export default function LandingPage() {
       '@context': 'https://schema.org',
       '@type': 'WebSite',
       name: 'CreditBrain',
-      url: '${SITE_URL}',
+      url: `${SITE_URL}`,
       potentialAction: {
         '@type': 'SearchAction',
         target: {
           '@type': 'EntryPoint',
-          urlTemplate: '${SITE_URL}/cards?search={search_term_string}',
+          urlTemplate: `${SITE_URL}/cards?search={search_term_string}`,
         },
         'query-input': 'required name=search_term_string',
       },

@@ -219,7 +219,7 @@ export default function BlogListPage() {
 
   const meta = CATEGORY_META[activeCategory];
   const canonicalUrl = activeCategory === 'All'
-    ? '${SITE_URL}/blog'
+    ? `${SITE_URL}/blog`
     : `${SITE_URL}/blog?category=${encodeURIComponent(activeCategory)}`;
 
   useSeoMeta({
