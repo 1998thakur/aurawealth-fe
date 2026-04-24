@@ -1,20 +1,79 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import PublicLayout from '../../components/Layout/PublicLayout';
 import { blogApi } from '../../api/blog';
 import type { BlogSummary } from '../../types/blog';
-import { useSeoMeta } from '../../hooks/useSeoMeta';
+import { useSeoMeta, injectJsonLd, removeJsonLd } from '../../hooks/useSeoMeta';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-const CATEGORIES = ['All', 'Travel', 'Guide', 'Comparison', 'News'] as const;
+const CATEGORIES = ['All', 'Best Cards', 'Cashback', 'Rewards', 'Travel', 'Comparisons', 'Guides', 'Offers', 'News'] as const;
 type Category = (typeof CATEGORIES)[number];
+
+interface CategoryMeta {
+  title: string;
+  description: string;
+  keywords: string;
+}
+
+const CATEGORY_META: Record<Category, CategoryMeta> = {
+  'All': {
+    title: 'Credit Card Tips, Guides & Comparisons — CreditBrain Blog',
+    description: 'Expert guides on the best credit cards in India, reward optimisation strategies, card comparisons, and tips to maximise cashback and travel benefits.',
+    keywords: 'credit card blog India, credit card tips India, best credit card guides, reward points tips, credit card cashback tips, travel card India guide',
+  },
+  'Best Cards': {
+    title: 'Best Credit Cards in India 2025 — CreditBrain',
+    description: 'Curated lists of the best credit cards in India for every need — shopping, travel, fuel, dining, and more. Updated monthly.',
+    keywords: 'best credit card India 2025, top credit cards India, best credit card for online shopping India, lifetime free credit card India',
+  },
+  'Cashback': {
+    title: 'Best Cashback Credit Cards India — CreditBrain',
+    description: 'Find the highest cashback credit cards in India for groceries, shopping, fuel, and everyday spends. Compare rates and earn more.',
+    keywords: 'best cashback credit card India, cashback credit card groceries India, highest cashback credit card, cashback vs reward points India',
+  },
+  'Rewards': {
+    title: 'Credit Card Reward Points Guide India — CreditBrain',
+    description: 'Learn how to maximise credit card reward points in India. Best cards for reward points, redemption tips, and value calculations.',
+    keywords: 'credit card reward points India, maximise reward points, reward points value INR, best reward credit card India, reward points redemption guide',
+  },
+  'Travel': {
+    title: 'Best Travel Credit Cards India — Lounge Access & Forex — CreditBrain',
+    description: 'Best credit cards for travel in India. Airport lounge access, zero forex markup, air miles, and hotel benefits compared.',
+    keywords: 'best travel credit card India, airport lounge access credit card India, zero forex credit card, air miles credit card India, travel benefits credit card',
+  },
+  'Comparisons': {
+    title: 'Credit Card Comparisons India — Side-by-Side — CreditBrain',
+    description: 'Head-to-head credit card comparisons in India. HDFC vs Axis vs ICICI vs SBI — find out which card wins for your spending.',
+    keywords: 'HDFC Regalia vs Infinia, Axis Magnus comparison, best credit card comparison India, credit card vs credit card India',
+  },
+  'Guides': {
+    title: 'Credit Card How-To Guides India — CreditBrain',
+    description: 'Step-by-step guides on applying for credit cards, improving credit scores, getting fee waivers, and understanding billing cycles in India.',
+    keywords: 'how to apply credit card India, credit card annual fee waiver, credit score for credit card India, credit card billing cycle explained',
+  },
+  'Offers': {
+    title: 'Latest Credit Card Offers & Bonuses India — CreditBrain',
+    description: 'Current credit card welcome bonuses, joining offers, limited-time promotions, and bank deals in India. Updated regularly.',
+    keywords: 'credit card welcome bonus India, credit card joining offer, bank credit card offers India, credit card promotional offers',
+  },
+  'News': {
+    title: 'Credit Card News India — New Launches & Fee Changes — CreditBrain',
+    description: 'Latest credit card news in India — new card launches, reward programme changes, bank fee revisions, and industry updates.',
+    keywords: 'new credit card launch India 2025, credit card fee revision, credit card reward programme change India, credit card news India',
+  },
+};
 
 const CATEGORY_GRADIENTS: Record<string, string> = {
   Travel: 'from-blue-500 to-indigo-700',
-  Guide: 'from-emerald-500 to-teal-700',
-  Comparison: 'from-violet-500 to-purple-700',
+  Guides: 'from-emerald-500 to-teal-700',
+  Comparisons: 'from-violet-500 to-purple-700',
+  Cashback: 'from-orange-500 to-amber-600',
+  Rewards: 'from-yellow-500 to-orange-600',
+  'Best Cards': 'from-primary to-primary/60',
+  Offers: 'from-rose-500 to-pink-600',
+  News: 'from-slate-500 to-slate-700',
 };
 
 function getCategoryGradient(category?: string): string {
@@ -153,20 +212,23 @@ function FeaturedCard({ post }: { post: BlogSummary }) {
 // ─── Main page ────────────────────────────────────────────────────────────────
 
 export default function BlogListPage() {
-  useSeoMeta({
-    title: 'Credit Card Tips, Guides & Comparisons — CreditBrain Blog',
-    description:
-      'Expert guides on the best credit cards in India, reward optimization strategies, card comparisons, and tips to maximize cashback and travel benefits.',
-    keywords:
-      'credit card blog India, credit card tips India, best credit card guides, reward points tips, credit card cashback tips, travel card India guide',
-    canonical: 'https://credbrain.in/blog',
-    ogUrl: 'https://credbrain.in/blog',
-    ogType: 'website',
-  });
-
   const [activeCategory, setActiveCategory] = useState<Category>('All');
   const [page, setPage] = useState(0);
   const [allPosts, setAllPosts] = useState<BlogSummary[]>([]);
+
+  const meta = CATEGORY_META[activeCategory];
+  const canonicalUrl = activeCategory === 'All'
+    ? 'https://credbrain.in/blog'
+    : `https://credbrain.in/blog?category=${encodeURIComponent(activeCategory)}`;
+
+  useSeoMeta({
+    title: meta.title,
+    description: meta.description,
+    keywords: meta.keywords,
+    canonical: canonicalUrl,
+    ogUrl: canonicalUrl,
+    ogType: 'website',
+  });
 
   const categoryParam = activeCategory === 'All' ? undefined : activeCategory;
 
@@ -176,6 +238,26 @@ export default function BlogListPage() {
     queryFn: () => blogApi.getFeatured(),
     staleTime: 5 * 60 * 1000,
   });
+
+  // ItemList JSON-LD — inject when we have posts to show
+  useEffect(() => {
+    const posts = allPosts.length > 0 ? allPosts : (featuredPosts ?? []);
+    if (posts.length === 0) return;
+    injectJsonLd('blog-list', {
+      '@context': 'https://schema.org',
+      '@type': 'ItemList',
+      name: meta.title,
+      description: meta.description,
+      url: canonicalUrl,
+      itemListElement: posts.slice(0, 20).map((post, i) => ({
+        '@type': 'ListItem',
+        position: i + 1,
+        url: `https://credbrain.in/blog/${post.slug}`,
+        name: post.title,
+      })),
+    });
+    return () => removeJsonLd('blog-list');
+  }, [allPosts, featuredPosts, meta, canonicalUrl]);
 
   // Paginated list
   const { data: postsPage, isLoading, isFetching } = useQuery({

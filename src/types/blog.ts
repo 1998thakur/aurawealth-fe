@@ -1,3 +1,8 @@
+export interface FaqItem {
+  question: string;
+  answer: string;
+}
+
 export interface BlogSummary {
   id: string;
   slug: string;
@@ -17,7 +22,10 @@ export interface BlogDetail extends BlogSummary {
   authorAvatarUrl?: string;
   metaTitle?: string;
   metaDescription?: string;
+  keywords?: string;
+  faqItems?: FaqItem[];
   createdAt: string;
+  updatedAt: string;
   related: BlogSummary[];
 }
 

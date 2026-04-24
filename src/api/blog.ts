@@ -1,6 +1,22 @@
 import apiClient from './client';
-import type { BlogSummary, BlogDetail, BlogListParams } from '../types/blog';
+import type { BlogSummary, BlogDetail, BlogListParams, FaqItem } from '../types/blog';
 import type { PagedResponse } from '../types/cards';
+
+export interface UpdateBlogPostRequest {
+  title?: string;
+  excerpt?: string;
+  content?: string;
+  coverImageUrl?: string;
+  authorName?: string;
+  tags?: string[];
+  category?: string;
+  featured?: boolean;
+  metaTitle?: string;
+  metaDescription?: string;
+  keywords?: string;
+  faqItems?: FaqItem[];
+  status?: string;
+}
 
 export const blogApi = {
   getPosts: async (params: BlogListParams = {}): Promise<PagedResponse<BlogSummary>> => {
@@ -18,6 +34,10 @@ export const blogApi = {
   },
   getPost: async (slug: string): Promise<BlogDetail> => {
     const res = await apiClient.get<BlogDetail>(`/blog/${slug}`);
+    return res.data;
+  },
+  updatePost: async (id: string, data: UpdateBlogPostRequest): Promise<BlogDetail> => {
+    const res = await apiClient.patch<BlogDetail>(`/blog/${id}`, data);
     return res.data;
   },
 };

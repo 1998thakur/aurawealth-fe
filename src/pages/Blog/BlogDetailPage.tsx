@@ -3,8 +3,8 @@ import { Link, useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import PublicLayout from '../../components/Layout/PublicLayout';
 import { blogApi } from '../../api/blog';
-import { useSeoMeta } from '../../hooks/useSeoMeta';
-import type { BlogSummary } from '../../types/blog';
+import { useSeoMeta, injectJsonLd, removeJsonLd } from '../../hooks/useSeoMeta';
+import type { BlogSummary, FaqItem } from '../../types/blog';
 
 // ─── Gradient helper ──────────────────────────────────────────────────────────
 
@@ -101,49 +101,103 @@ export default function BlogDetailPage() {
     }
   }, [isError, navigate]);
 
-  // SEO meta
+  const postUrl = post ? `https://credbrain.in/blog/${post.slug}` : undefined;
+
+  // SEO meta + article OG properties
   useSeoMeta({
     title: post?.metaTitle || post?.title || 'CreditBrain Blog',
     description: post?.metaDescription || post?.excerpt,
+    keywords: post?.keywords || (post?.tags?.join(', ')),
     ogTitle: post?.metaTitle || post?.title,
     ogDescription: post?.metaDescription || post?.excerpt,
     ogImage: post?.coverImageUrl,
     ogType: 'article',
-    canonical: post ? `https://credbrain.in/blog/${post.slug}` : undefined,
+    ogUrl: postUrl,
+    canonical: postUrl,
+    articlePublishedTime: post?.publishedAt,
+    articleModifiedTime: post?.updatedAt,
+    articleSection: post?.category,
+    articleTags: post?.tags,
   });
 
-  // JSON-LD structured data
+  // Article JSON-LD
   useEffect(() => {
     if (!post) return;
-    const script = document.createElement('script');
-    script.type = 'application/ld+json';
-    script.id = 'blog-jsonld';
-    script.text = JSON.stringify({
+    const wordCount = post.content.replace(/<[^>]+>/g, ' ').trim().split(/\s+/).length;
+    injectJsonLd('article', {
       '@context': 'https://schema.org',
       '@type': 'Article',
       headline: post.title,
       description: post.excerpt,
       image: post.coverImageUrl || undefined,
+      keywords: post.keywords || post.tags?.join(', '),
+      articleSection: post.category,
+      wordCount,
       author: {
-        '@type': 'Organization',
+        '@type': 'Person',
         name: post.authorName,
       },
       publisher: {
         '@type': 'Organization',
         name: 'CreditBrain',
         url: 'https://credbrain.in',
+        logo: {
+          '@type': 'ImageObject',
+          url: 'https://credbrain.in/logo.png',
+        },
       },
       datePublished: post.publishedAt,
-      dateModified: post.createdAt,
+      dateModified: post.updatedAt,
       mainEntityOfPage: {
         '@type': 'WebPage',
         '@id': `https://credbrain.in/blog/${post.slug}`,
       },
     });
-    document.head.appendChild(script);
-    return () => {
-      document.getElementById('blog-jsonld')?.remove();
-    };
+    return () => removeJsonLd('article');
+  }, [post]);
+
+  // BreadcrumbList JSON-LD
+  useEffect(() => {
+    if (!post) return;
+    const items: object[] = [
+      { '@type': 'ListItem', position: 1, name: 'Home',  item: 'https://credbrain.in' },
+      { '@type': 'ListItem', position: 2, name: 'Blog',  item: 'https://credbrain.in/blog' },
+    ];
+    if (post.category) {
+      items.push({
+        '@type': 'ListItem',
+        position: 3,
+        name: post.category,
+        item: `https://credbrain.in/blog?category=${encodeURIComponent(post.category)}`,
+      });
+      items.push({ '@type': 'ListItem', position: 4, name: post.title, item: `https://credbrain.in/blog/${post.slug}` });
+    } else {
+      items.push({ '@type': 'ListItem', position: 3, name: post.title, item: `https://credbrain.in/blog/${post.slug}` });
+    }
+    injectJsonLd('breadcrumb', {
+      '@context': 'https://schema.org',
+      '@type': 'BreadcrumbList',
+      itemListElement: items,
+    });
+    return () => removeJsonLd('breadcrumb');
+  }, [post]);
+
+  // FAQPage JSON-LD (only when post has FAQ items)
+  useEffect(() => {
+    if (!post?.faqItems?.length) return;
+    injectJsonLd('faq', {
+      '@context': 'https://schema.org',
+      '@type': 'FAQPage',
+      mainEntity: post.faqItems.map((faq: FaqItem) => ({
+        '@type': 'Question',
+        name: faq.question,
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: faq.answer,
+        },
+      })),
+    });
+    return () => removeJsonLd('faq');
   }, [post]);
 
   if (isLoading) return <PublicLayout><DetailSkeleton /></PublicLayout>;
@@ -250,6 +304,33 @@ export default function BlogDetailPage() {
               ))}
             </div>
           </div>
+        )}
+
+        {/* FAQ section */}
+        {post.faqItems && post.faqItems.length > 0 && (
+          <section className="mt-10 pt-6 border-t border-outline-variant">
+            <h2 className="font-headline font-bold text-xl text-on-surface mb-5">
+              Frequently Asked Questions
+            </h2>
+            <div className="space-y-4">
+              {post.faqItems.map((faq, i) => (
+                <details
+                  key={i}
+                  className="group rounded-xl bg-surface-container border border-outline-variant overflow-hidden"
+                >
+                  <summary className="flex items-center justify-between gap-4 cursor-pointer px-5 py-4 font-body font-semibold text-on-surface text-sm list-none">
+                    <span>{faq.question}</span>
+                    <span className="material-symbols-outlined text-outline group-open:rotate-180 transition-transform shrink-0">
+                      expand_more
+                    </span>
+                  </summary>
+                  <div className="px-5 pb-4 font-body text-sm text-on-surface-variant leading-relaxed">
+                    {faq.answer}
+                  </div>
+                </details>
+              ))}
+            </div>
+          </section>
         )}
 
         {/* Related posts */}
