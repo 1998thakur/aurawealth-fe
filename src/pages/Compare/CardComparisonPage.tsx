@@ -8,6 +8,7 @@ import { cardsApi } from '../../api/cards';
 import { formatInr } from '../../utils/format';
 import type { CardDetail, CardTier } from '../../types/cards';
 import { useSeoMeta } from '../../hooks/useSeoMeta';
+import { SITE_URL } from '../../config';
 
 const TIER_BADGES: Record<CardTier, string> = {
   ENTRY: 'tier-badge-entry',
@@ -242,8 +243,8 @@ export default function CardComparisonPage() {
       'Compare up to 3 Indian credit cards side-by-side. See rewards, annual fees, lounge access, forex charges, and net annual value — all in one view.',
     keywords:
       'compare credit cards India, credit card comparison tool, best credit card comparison, HDFC vs Axis credit card, credit card side by side comparison India',
-    canonical: 'https://credbrain.in/compare',
-    ogUrl: 'https://credbrain.in/compare',
+    canonical: '${SITE_URL}/compare',
+    ogUrl: '${SITE_URL}/compare',
   });
 
   const [searchParams, setSearchParams] = useSearchParams();

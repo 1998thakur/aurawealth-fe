@@ -10,6 +10,7 @@ import { expenseApi } from '../../api/expense';
 import { formatInr, formatNumber } from '../../utils/format';
 import type { CardTier, RewardRule } from '../../types/cards';
 import { useSeoMeta, injectJsonLd, removeJsonLd } from '../../hooks/useSeoMeta';
+import { SITE_URL } from '../../config';
 
 type Tab = 'overview' | 'calculator' | 'profit';
 
@@ -139,8 +140,8 @@ export default function CardDetailPage() {
       ? `${card.name}, ${card.issuer.name} credit card, ${card.name} review, ${card.name} rewards, ${card.name} benefits`
       : undefined,
     ogType: 'website',
-    canonical: card ? `https://credbrain.in/cards/${card.id}` : undefined,
-    ogUrl: card ? `https://credbrain.in/cards/${card.id}` : undefined,
+    canonical: card ? `${SITE_URL}/cards/${card.id}` : undefined,
+    ogUrl: card ? `${SITE_URL}/cards/${card.id}` : undefined,
     ogImage: card?.cardImageUrl ?? undefined,
   });
 
@@ -150,9 +151,9 @@ export default function CardDetailPage() {
       '@context': 'https://schema.org',
       '@type': 'BreadcrumbList',
       itemListElement: [
-        { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://credbrain.in/' },
-        { '@type': 'ListItem', position: 2, name: 'Credit Cards', item: 'https://credbrain.in/cards' },
-        { '@type': 'ListItem', position: 3, name: card.name, item: `https://credbrain.in/cards/${card.id}` },
+        { '@type': 'ListItem', position: 1, name: 'Home', item: '${SITE_URL}/' },
+        { '@type': 'ListItem', position: 2, name: 'Credit Cards', item: '${SITE_URL}/cards' },
+        { '@type': 'ListItem', position: 3, name: card.name, item: `${SITE_URL}/cards/${card.id}` },
       ],
     });
     injectJsonLd('card-product', {

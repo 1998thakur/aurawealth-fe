@@ -8,6 +8,7 @@ import { cardsApi } from '../../api/cards';
 import type { CardSummary, CardTier, RewardType } from '../../types/cards';
 import { formatInr } from '../../utils/format';
 import { useSeoMeta, injectJsonLd, removeJsonLd } from '../../hooks/useSeoMeta';
+import { SITE_URL } from '../../config';
 
 const TIER_BADGES: Record<CardTier, string> = {
   ENTRY: 'tier-badge-entry',
@@ -124,8 +125,8 @@ export default function CardCatalogPage() {
       'Browse and compare 75+ credit cards in India. Filter by tier, reward type, annual fee, and lounge access. Find the best cashback, travel, and reward points cards.',
     keywords:
       'best credit cards India 2024, compare credit cards India, cashback credit cards, travel credit cards, no annual fee credit cards, lounge access credit cards, top credit cards India',
-    canonical: 'https://credbrain.in/cards',
-    ogUrl: 'https://credbrain.in/cards',
+    canonical: '${SITE_URL}/cards',
+    ogUrl: '${SITE_URL}/cards',
   });
 
   useEffect(() => {
@@ -133,8 +134,8 @@ export default function CardCatalogPage() {
       '@context': 'https://schema.org',
       '@type': 'BreadcrumbList',
       itemListElement: [
-        { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://credbrain.in/' },
-        { '@type': 'ListItem', position: 2, name: 'Credit Cards', item: 'https://credbrain.in/cards' },
+        { '@type': 'ListItem', position: 1, name: 'Home', item: '${SITE_URL}/' },
+        { '@type': 'ListItem', position: 2, name: 'Credit Cards', item: '${SITE_URL}/cards' },
       ],
     });
     return () => removeJsonLd('breadcrumb-cards');

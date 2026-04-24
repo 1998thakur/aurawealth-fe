@@ -5,6 +5,7 @@ import PublicLayout from '../../components/Layout/PublicLayout';
 import { blogApi } from '../../api/blog';
 import type { BlogSummary } from '../../types/blog';
 import { useSeoMeta, injectJsonLd, removeJsonLd } from '../../hooks/useSeoMeta';
+import { SITE_URL } from '../../config';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -218,8 +219,8 @@ export default function BlogListPage() {
 
   const meta = CATEGORY_META[activeCategory];
   const canonicalUrl = activeCategory === 'All'
-    ? 'https://credbrain.in/blog'
-    : `https://credbrain.in/blog?category=${encodeURIComponent(activeCategory)}`;
+    ? '${SITE_URL}/blog'
+    : `${SITE_URL}/blog?category=${encodeURIComponent(activeCategory)}`;
 
   useSeoMeta({
     title: meta.title,
@@ -252,7 +253,7 @@ export default function BlogListPage() {
       itemListElement: posts.slice(0, 20).map((post, i) => ({
         '@type': 'ListItem',
         position: i + 1,
-        url: `https://credbrain.in/blog/${post.slug}`,
+        url: `${SITE_URL}/blog/${post.slug}`,
         name: post.title,
       })),
     });

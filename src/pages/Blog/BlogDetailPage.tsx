@@ -5,6 +5,7 @@ import PublicLayout from '../../components/Layout/PublicLayout';
 import { blogApi } from '../../api/blog';
 import { useSeoMeta, injectJsonLd, removeJsonLd } from '../../hooks/useSeoMeta';
 import type { BlogSummary, FaqItem } from '../../types/blog';
+import { SITE_URL } from '../../config';
 
 // ─── Gradient helper ──────────────────────────────────────────────────────────
 
@@ -101,7 +102,7 @@ export default function BlogDetailPage() {
     }
   }, [isError, navigate]);
 
-  const postUrl = post ? `https://credbrain.in/blog/${post.slug}` : undefined;
+  const postUrl = post ? `${SITE_URL}/blog/${post.slug}` : undefined;
 
   // SEO meta + article OG properties
   useSeoMeta({
@@ -140,17 +141,17 @@ export default function BlogDetailPage() {
       publisher: {
         '@type': 'Organization',
         name: 'CreditBrain',
-        url: 'https://credbrain.in',
+        url: '${SITE_URL}',
         logo: {
           '@type': 'ImageObject',
-          url: 'https://credbrain.in/logo.png',
+          url: '${SITE_URL}/logo.png',
         },
       },
       datePublished: post.publishedAt,
       dateModified: post.updatedAt,
       mainEntityOfPage: {
         '@type': 'WebPage',
-        '@id': `https://credbrain.in/blog/${post.slug}`,
+        '@id': `${SITE_URL}/blog/${post.slug}`,
       },
     });
     return () => removeJsonLd('article');
@@ -160,19 +161,19 @@ export default function BlogDetailPage() {
   useEffect(() => {
     if (!post) return;
     const items: object[] = [
-      { '@type': 'ListItem', position: 1, name: 'Home',  item: 'https://credbrain.in' },
-      { '@type': 'ListItem', position: 2, name: 'Blog',  item: 'https://credbrain.in/blog' },
+      { '@type': 'ListItem', position: 1, name: 'Home',  item: '${SITE_URL}' },
+      { '@type': 'ListItem', position: 2, name: 'Blog',  item: '${SITE_URL}/blog' },
     ];
     if (post.category) {
       items.push({
         '@type': 'ListItem',
         position: 3,
         name: post.category,
-        item: `https://credbrain.in/blog?category=${encodeURIComponent(post.category)}`,
+        item: `${SITE_URL}/blog?category=${encodeURIComponent(post.category)}`,
       });
-      items.push({ '@type': 'ListItem', position: 4, name: post.title, item: `https://credbrain.in/blog/${post.slug}` });
+      items.push({ '@type': 'ListItem', position: 4, name: post.title, item: `${SITE_URL}/blog/${post.slug}` });
     } else {
-      items.push({ '@type': 'ListItem', position: 3, name: post.title, item: `https://credbrain.in/blog/${post.slug}` });
+      items.push({ '@type': 'ListItem', position: 3, name: post.title, item: `${SITE_URL}/blog/${post.slug}` });
     }
     injectJsonLd('breadcrumb', {
       '@context': 'https://schema.org',

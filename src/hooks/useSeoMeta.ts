@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { SITE_NAME, SITE_URL } from '../config';
 
 interface SeoMeta {
   title: string;
@@ -18,8 +19,7 @@ interface SeoMeta {
   articleTags?: string[];
 }
 
-const SITE_NAME = 'CreditBrain';
-const DEFAULT_OG_IMAGE = 'https://credbrain.in/og-image.png';
+const DEFAULT_OG_IMAGE = `${SITE_URL}/og-image.png`;
 
 export function useSeoMeta({
   title,
