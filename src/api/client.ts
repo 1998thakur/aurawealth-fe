@@ -14,7 +14,7 @@ const apiClient: AxiosInstance = axios.create({
 // Request interceptor: attach Authorization header
 apiClient.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
-    const token = localStorage.getItem('aw_access_token');
+    const token = typeof window !== 'undefined' ? localStorage.getItem('aw_access_token') : null;
     if (token && config.headers) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -81,7 +81,7 @@ apiClient.interceptors.response.use(
           response.data?.data?.accessToken || response.data?.accessToken;
 
         if (newAccessToken) {
-          localStorage.setItem('aw_access_token', newAccessToken);
+          if (typeof window !== 'undefined') localStorage.setItem('aw_access_token', newAccessToken);
           apiClient.defaults.headers.common.Authorization = `Bearer ${newAccessToken}`;
           processQueue(null, newAccessToken);
           originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
@@ -91,8 +91,10 @@ apiClient.interceptors.response.use(
         }
       } catch (refreshError) {
         processQueue(refreshError, null);
-        localStorage.removeItem('aw_access_token');
-        window.location.href = '/auth';
+        if (typeof window !== 'undefined') {
+          localStorage.removeItem('aw_access_token');
+          window.location.href = '/auth';
+        }
         return Promise.reject(refreshError);
       } finally {
         isRefreshing = false;

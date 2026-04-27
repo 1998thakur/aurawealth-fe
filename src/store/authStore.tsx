@@ -62,7 +62,7 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 
 const initialState: AuthState = {
   user: null,
-  accessToken: localStorage.getItem('aw_access_token'),
+  accessToken: null, // Read from localStorage in useEffect (safe for SSR)
   isAuthenticated: false,
   isLoading: true,
 };
