@@ -1,5 +1,7 @@
+'use client';
 
-import { Link, NavLink } from 'react-router-dom';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { useAuth } from '../../store/authStore';
 
 interface PublicLayoutProps {
@@ -8,6 +10,16 @@ interface PublicLayoutProps {
 
 export default function PublicLayout({ children }: PublicLayoutProps) {
   const { state } = useAuth();
+  const pathname = usePathname();
+
+  function navClass(path: string) {
+    const isActive = pathname === path || (path !== '/' && pathname?.startsWith(path));
+    return `font-body text-sm font-medium px-4 py-2 rounded-xl transition-colors ${
+      isActive
+        ? 'text-primary bg-primary-fixed/30'
+        : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container'
+    }`;
+  }
 
   return (
     <div className="min-h-screen bg-surface flex flex-col">
@@ -16,7 +28,7 @@ export default function PublicLayout({ children }: PublicLayoutProps) {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center h-16 gap-8">
             {/* Brand */}
-            <Link to="/" className="flex items-center gap-2.5 shrink-0">
+            <Link href="/" className="flex items-center gap-2.5 shrink-0">
               <div className="w-8 h-8 bg-primary rounded-xl flex items-center justify-center">
                 <span className="material-symbols-outlined text-on-primary text-lg">diamond</span>
               </div>
@@ -25,73 +37,25 @@ export default function PublicLayout({ children }: PublicLayoutProps) {
 
             {/* Center nav links */}
             <nav className="hidden md:flex items-center gap-1 flex-1 justify-center">
-              <NavLink
-                to="/cards"
-                className={({ isActive }) =>
-                  `font-body text-sm font-medium px-4 py-2 rounded-xl transition-colors ${
-                    isActive
-                      ? 'text-primary bg-primary-fixed/30'
-                      : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container'
-                  }`
-                }
-              >
-                Find a Card
-              </NavLink>
-              <NavLink
-                to="/simulator"
-                className={({ isActive }) =>
-                  `font-body text-sm font-medium px-4 py-2 rounded-xl transition-colors ${
-                    isActive
-                      ? 'text-primary bg-primary-fixed/30'
-                      : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container'
-                  }`
-                }
-              >
-                Rewards Calculator
-              </NavLink>
-              <NavLink
-                to="/compare"
-                className={({ isActive }) =>
-                  `font-body text-sm font-medium px-4 py-2 rounded-xl transition-colors ${
-                    isActive
-                      ? 'text-primary bg-primary-fixed/30'
-                      : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container'
-                  }`
-                }
-              >
-                Compare Cards
-              </NavLink>
-              <NavLink
-                to="/blog"
-                className={({ isActive }) =>
-                  `font-body text-sm font-medium px-4 py-2 rounded-xl transition-colors ${
-                    isActive
-                      ? 'text-primary bg-primary-fixed/30'
-                      : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container'
-                  }`
-                }
-              >
-                Blog
-              </NavLink>
+              <Link href="/cards" className={navClass('/cards')}>Find a Card</Link>
+              <Link href="/simulator" className={navClass('/simulator')}>Rewards Calculator</Link>
+              <Link href="/compare" className={navClass('/compare')}>Compare Cards</Link>
+              <Link href="/blog" className={navClass('/blog')}>Blog</Link>
             </nav>
 
             {/* Right CTA */}
             <div className="ml-auto flex items-center gap-3">
               {state.isAuthenticated ? (
-                <Link to="/dashboard" className="btn-primary text-sm py-2 px-4">
-                  Dashboard
-                </Link>
+                <Link href="/dashboard" className="btn-primary text-sm py-2 px-4">Dashboard</Link>
               ) : (
                 <>
                   <Link
-                    to="/auth"
+                    href="/auth"
                     className="font-body text-sm font-medium text-on-surface-variant hover:text-on-surface transition-colors hidden sm:block"
                   >
                     Sign In
                   </Link>
-                  <Link to="/auth" className="btn-primary text-sm py-2 px-4">
-                    Get Started
-                  </Link>
+                  <Link href="/auth" className="btn-primary text-sm py-2 px-4">Get Started</Link>
                 </>
               )}
             </div>
@@ -111,9 +75,7 @@ export default function PublicLayout({ children }: PublicLayoutProps) {
                 <div className="w-7 h-7 bg-primary-fixed rounded-lg flex items-center justify-center">
                   <span className="material-symbols-outlined text-primary text-base">diamond</span>
                 </div>
-                <span className="font-headline font-bold text-base text-inverse-on-surface">
-                  CreditBrain
-                </span>
+                <span className="font-headline font-bold text-base text-inverse-on-surface">CreditBrain</span>
               </div>
               <p className="font-body text-sm text-inverse-on-surface/60 max-w-xs">
                 India's smartest credit card advisor. Find cards that earn you the most.
@@ -121,19 +83,17 @@ export default function PublicLayout({ children }: PublicLayoutProps) {
             </div>
             <div className="flex flex-wrap gap-12">
               <div>
-                <p className="font-body font-semibold text-sm text-inverse-on-surface mb-3">
-                  Product
-                </p>
+                <p className="font-body font-semibold text-sm text-inverse-on-surface mb-3">Product</p>
                 <ul className="space-y-2">
                   {[
-                    { label: 'Find a Card', to: '/cards' },
-                    { label: 'Compare Cards', to: '/compare' },
-                    { label: 'Rewards Calculator', to: '/simulator' },
-                    { label: 'Get Recommendations', to: '/expense-profiler' },
+                    { label: 'Find a Card', href: '/cards' },
+                    { label: 'Compare Cards', href: '/compare' },
+                    { label: 'Rewards Calculator', href: '/simulator' },
+                    { label: 'Get Recommendations', href: '/expense-profiler' },
                   ].map((link) => (
-                    <li key={link.to}>
+                    <li key={link.href}>
                       <Link
-                        to={link.to}
+                        href={link.href}
                         className="font-body text-sm text-inverse-on-surface/60 hover:text-inverse-on-surface transition-colors"
                       >
                         {link.label}
@@ -143,23 +103,16 @@ export default function PublicLayout({ children }: PublicLayoutProps) {
                 </ul>
               </div>
               <div>
-                <p className="font-body font-semibold text-sm text-inverse-on-surface mb-3">
-                  Company
-                </p>
+                <p className="font-body font-semibold text-sm text-inverse-on-surface mb-3">Company</p>
                 <ul className="space-y-2">
                   <li>
-                    <Link
-                      to="/blog"
-                      className="font-body text-sm text-inverse-on-surface/60 hover:text-inverse-on-surface transition-colors"
-                    >
+                    <Link href="/blog" className="font-body text-sm text-inverse-on-surface/60 hover:text-inverse-on-surface transition-colors">
                       Blog
                     </Link>
                   </li>
                   {['About', 'Privacy Policy', 'Terms of Service', 'Contact'].map((label) => (
                     <li key={label}>
-                      <span className="font-body text-sm text-inverse-on-surface/60 cursor-default">
-                        {label}
-                      </span>
+                      <span className="font-body text-sm text-inverse-on-surface/60 cursor-default">{label}</span>
                     </li>
                   ))}
                 </ul>

@@ -7,10 +7,6 @@
     {
       "source": "/sitemap.xml",
       "destination": "https://aurawealth-backend-production.up.railway.app/sitemap.xml"
-    },
-    {
-      "source": "/:path*",
-      "destination": "/index.html"
     }
   ]
 }
