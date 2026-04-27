@@ -1,0 +1,12 @@
+{
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "https://aurawealth-backend-production.up.railway.app/api/:path*"
+    },
+    {
+      "source": "/sitemap.xml",
+      "destination": "https://aurawealth-backend-production.up.railway.app/sitemap.xml"
+    }
+  ]
+}

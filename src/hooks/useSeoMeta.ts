@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { SITE_NAME, SITE_URL } from '../config';
 
 interface SeoMeta {
   title: string;
@@ -11,10 +12,14 @@ interface SeoMeta {
   ogUrl?: string;
   canonical?: string;
   noIndex?: boolean;
+  // Article-specific OG properties (used on blog detail pages)
+  articlePublishedTime?: string;
+  articleModifiedTime?: string;
+  articleSection?: string;
+  articleTags?: string[];
 }
 
-const SITE_NAME = 'CreditBrain';
-const DEFAULT_OG_IMAGE = 'https://credbrain.in/og-image.png';
+const DEFAULT_OG_IMAGE = `${SITE_URL}/og-image.png`;
 
 export function useSeoMeta({
   title,
@@ -27,6 +32,10 @@ export function useSeoMeta({
   ogUrl,
   canonical,
   noIndex = false,
+  articlePublishedTime,
+  articleModifiedTime,
+  articleSection,
+  articleTags,
 }: SeoMeta) {
   useEffect(() => {
     const fullTitle = title.includes(SITE_NAME) ? title : `${title} | ${SITE_NAME}`;
@@ -43,6 +52,22 @@ export function useSeoMeta({
     setMeta('og:site_name', SITE_NAME, true);
     setMeta('og:image', ogImage || DEFAULT_OG_IMAGE, true);
     if (ogUrl) setMeta('og:url', ogUrl, true);
+
+    // Article OG properties (only set when provided; remove stale ones on cleanup)
+    if (articlePublishedTime) setMeta('article:published_time', articlePublishedTime, true);
+    if (articleModifiedTime)  setMeta('article:modified_time',  articleModifiedTime,  true);
+    if (articleSection)       setMeta('article:section',        articleSection,        true);
+    // article:tag allows multiple values — one <meta> per tag
+    if (articleTags && articleTags.length > 0) {
+      // Remove previously injected article:tag metas first
+      document.querySelectorAll('meta[property="article:tag"]').forEach(el => el.remove());
+      articleTags.forEach(tag => {
+        const el = document.createElement('meta');
+        el.setAttribute('property', 'article:tag');
+        el.content = tag;
+        document.head.appendChild(el);
+      });
+    }
 
     // Twitter / X
     setMeta('twitter:card', 'summary_large_image');
@@ -64,8 +89,11 @@ export function useSeoMeta({
 
     return () => {
       document.title = 'CreditBrain — India\'s Smartest Credit Card Advisor';
+      // Clean up article:tag metas on unmount
+      document.querySelectorAll('meta[property="article:tag"]').forEach(el => el.remove());
     };
-  }, [title, description, keywords, ogTitle, ogDescription, ogImage, ogType, ogUrl, canonical, noIndex]);
+  }, [title, description, keywords, ogTitle, ogDescription, ogImage, ogType, ogUrl, canonical,
+      noIndex, articlePublishedTime, articleModifiedTime, articleSection, articleTags]);
 }
 
 function setMeta(name: string, content: string, isProperty = false) {

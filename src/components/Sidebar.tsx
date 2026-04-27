@@ -1,5 +1,7 @@
+'use client';
 
-import { NavLink, useNavigate } from 'react-router-dom';
+import Link from 'next/link';
+import { usePathname, useRouter } from 'next/navigation';
 import clsx from 'clsx';
 import { useAuth } from '../store/authStore';
 
@@ -24,12 +26,23 @@ interface SidebarProps {
 
 export default function Sidebar({ onClose }: SidebarProps) {
   const { state, logout } = useAuth();
-  const navigate = useNavigate();
+  const pathname = usePathname();
+  const router = useRouter();
 
   const handleLogout = async () => {
     await logout();
-    navigate('/auth');
+    router.push('/auth');
   };
+
+  function navClass(path: string) {
+    const isActive = pathname === path;
+    return clsx(
+      'flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors duration-150 font-body text-sm font-medium',
+      isActive
+        ? 'bg-primary-fixed text-primary'
+        : 'text-on-surface-variant hover:bg-surface-container hover:text-on-surface'
+    );
+  }
 
   return (
     <aside className="flex flex-col h-full bg-surface-container-lowest border-r border-outline-variant w-[280px]">
@@ -58,12 +71,8 @@ export default function Sidebar({ onClose }: SidebarProps) {
             </span>
           </div>
           <div className="min-w-0">
-            <p className="font-body font-semibold text-on-surface text-sm truncate">
-              {state.user.name}
-            </p>
-            <p className="font-body text-on-surface-variant text-xs truncate">
-              {state.user.email}
-            </p>
+            <p className="font-body font-semibold text-on-surface text-sm truncate">{state.user.name}</p>
+            <p className="font-body text-on-surface-variant text-xs truncate">{state.user.email}</p>
           </div>
         </div>
       )}
@@ -73,21 +82,10 @@ export default function Sidebar({ onClose }: SidebarProps) {
         <ul className="space-y-1">
           {NAV_ITEMS.map((item) => (
             <li key={item.path}>
-              <NavLink
-                to={item.path}
-                onClick={onClose}
-                className={({ isActive }) =>
-                  clsx(
-                    'flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors duration-150 font-body text-sm font-medium',
-                    isActive
-                      ? 'bg-primary-fixed text-primary'
-                      : 'text-on-surface-variant hover:bg-surface-container hover:text-on-surface'
-                  )
-                }
-              >
+              <Link href={item.path} onClick={onClose} className={navClass(item.path)}>
                 <span className="material-symbols-outlined text-xl">{item.icon}</span>
                 {item.label}
-              </NavLink>
+              </Link>
             </li>
           ))}
         </ul>
@@ -95,21 +93,10 @@ export default function Sidebar({ onClose }: SidebarProps) {
 
       {/* Bottom actions */}
       <div className="px-3 py-4 border-t border-outline-variant space-y-1">
-        <NavLink
-          to="/settings"
-          onClick={onClose}
-          className={({ isActive }) =>
-            clsx(
-              'flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors duration-150 font-body text-sm font-medium w-full',
-              isActive
-                ? 'bg-primary-fixed text-primary'
-                : 'text-on-surface-variant hover:bg-surface-container hover:text-on-surface'
-            )
-          }
-        >
+        <Link href="/settings" onClick={onClose} className={navClass('/settings')}>
           <span className="material-symbols-outlined text-xl">settings</span>
           Settings
-        </NavLink>
+        </Link>
         <button
           onClick={handleLogout}
           className="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors duration-150 font-body text-sm font-medium text-error hover:bg-error-container w-full"
