@@ -7,7 +7,8 @@ const adminClient: AxiosInstance = axios.create({
 
 adminClient.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
-    const token = typeof window !== 'undefined' ? localStorage.getItem('aw_admin_token') : null;
+    // Admin portal now uses the same token as regular users (role is embedded in JWT)
+    const token = typeof window !== 'undefined' ? localStorage.getItem('aw_access_token') : null;
     if (token && config.headers) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -25,7 +26,7 @@ adminClient.interceptors.response.use(
   },
   (error) => {
     if (error.response?.status === 401 && typeof window !== 'undefined') {
-      localStorage.removeItem('aw_admin_token');
+      localStorage.removeItem('aw_access_token');
       window.location.href = '/admin/login';
     }
     return Promise.reject(error);

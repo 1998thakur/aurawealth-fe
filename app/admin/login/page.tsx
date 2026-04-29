@@ -3,9 +3,13 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { authApi } from '../../../src/api/auth';
+import { useAuth } from '../../../src/store/authStore';
+
+const ADMIN_ROLES = ['SUPER_ADMIN', 'ADMIN', 'EDITOR', 'VIEWER'];
 
 export default function AdminLoginPage() {
   const router = useRouter();
+  const { login } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -16,8 +20,12 @@ export default function AdminLoginPage() {
     setError('');
     setLoading(true);
     try {
-      const result = await authApi.adminLogin({ email, password });
-      localStorage.setItem('aw_admin_token', result.accessToken);
+      const result = await authApi.login({ email, password });
+      if (!result.user.role || !ADMIN_ROLES.includes(result.user.role)) {
+        setError('This account does not have admin access');
+        return;
+      }
+      login(result.accessToken, result.user); // stores in aw_access_token + auth store
       router.push('/admin/blogs');
     } catch {
       setError('Invalid email or password');

@@ -37,8 +37,6 @@ export const authApi = {
     return response.data;
   },
 
-  adminLogin: async (data: LoginRequest): Promise<AuthResponse> => {
-    const response = await apiClient.post<AuthResponse>('/auth/admin/login', data);
-    return response.data;
-  },
+  // adminLogin is no longer needed — regular login() works for admin-role users.
+  // The /auth/admin/login backend endpoint is kept for backward compatibility.
 };
