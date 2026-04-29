@@ -26,6 +26,7 @@ export interface BlogDetail extends BlogSummary {
   faqItems?: FaqItem[];
   createdAt: string;
   updatedAt: string;
+  status?: string;
   related: BlogSummary[];
 }
 

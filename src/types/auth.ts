@@ -3,6 +3,7 @@ export interface User {
   name: string;
   email: string;
   phone: string;
+  role?: string | null;
 }
 
 // Backend returns { accessToken, user } — refresh token is in HTTP-only cookie

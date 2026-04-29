@@ -37,6 +37,8 @@ function YesNo({ value }: { value: boolean }) {
   );
 }
 
+const GRID_COLS = '160px repeat(3, 1fr)';
+
 function CompareRow({
   label,
   values,
@@ -45,20 +47,22 @@ function CompareRow({
   values: React.ReactNode[];
 }) {
   return (
-    <tr className="border-b border-outline-variant last:border-0">
-      <td className="py-3 pr-4 font-body text-sm text-on-surface-variant font-medium w-36 align-top">
+    <div
+      className="grid border-b border-outline-variant last:border-0"
+      style={{ gridTemplateColumns: GRID_COLS }}
+    >
+      <div className="py-3 px-3 font-body text-sm text-on-surface-variant font-medium self-start">
         {label}
-      </td>
+      </div>
       {values.map((val, i) => (
-        <td key={i} className="py-3 px-4 font-body text-sm text-on-surface align-top">
+        <div key={i} className="py-3 px-3 font-body text-sm text-on-surface self-start min-w-0">
           {val}
-        </td>
+        </div>
       ))}
-      {/* Empty columns if fewer than MAX_CARDS */}
       {Array.from({ length: MAX_CARDS - values.length }).map((_, i) => (
-        <td key={`empty-${i}`} className="py-3 px-4" />
+        <div key={`empty-${i}`} className="py-3 px-3" />
       ))}
-    </tr>
+    </div>
   );
 }
 
@@ -119,7 +123,7 @@ function CardSearchInput({
       </div>
 
       {open && (
-        <div className="absolute top-full left-0 right-0 bg-surface-container-lowest border border-outline-variant rounded-xl shadow-xl z-50 mt-1 max-h-72 overflow-y-auto">
+        <div className="absolute top-full left-0 right-0 bg-surface-container-lowest border border-outline-variant rounded-xl shadow-xl z-[100] mt-1 max-h-72 overflow-y-auto">
           {results.length === 0 && !isFetching && (
             <div className="px-4 py-6 text-center">
               <span className="material-symbols-outlined text-2xl text-on-surface-variant block mb-1">search_off</span>
@@ -395,9 +399,9 @@ export default function CardComparisonPage() {
         </div>
 
         {/* Card slots */}
-        <div className="flex gap-4 mb-8 overflow-x-auto pb-2">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
           {[0, 1, 2].map((i) => (
-            <div key={i} className="flex-1 min-w-[200px] max-w-xs">
+            <div key={i} className="min-w-0">
               <CardSlot
                 cardId={cardIds[i]}
                 onRemove={removeCard(i)}
@@ -417,35 +421,36 @@ export default function CardComparisonPage() {
               </h2>
             </div>
             <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-outline-variant bg-surface-container-low">
-                    <th className="py-3 px-4 text-left font-body text-xs text-on-surface-variant font-semibold uppercase tracking-wide w-36">
-                      Feature
-                    </th>
-                    {validCards.map((card: CardDetail) => (
-                      <th
-                        key={card.id}
-                        className="py-3 px-4 text-left font-headline font-bold text-on-surface text-sm"
-                      >
-                        {card.name}
-                      </th>
-                    ))}
-                    {Array.from({ length: MAX_CARDS - validCards.length }).map((_, i) => (
-                      <th key={`empty-${i}`} className="py-3 px-4" />
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {COMPARE_ROWS.map((row) => (
-                    <CompareRow
-                      key={row.label}
-                      label={row.label}
-                      values={validCards.map((card: CardDetail) => row.render(card))}
-                    />
+              <div className="min-w-[520px]">
+                {/* Header row */}
+                <div
+                  className="grid border-b border-outline-variant bg-surface-container-low"
+                  style={{ gridTemplateColumns: GRID_COLS }}
+                >
+                  <div className="py-3 px-3 font-body text-xs text-on-surface-variant font-semibold uppercase tracking-wide">
+                    Feature
+                  </div>
+                  {validCards.map((card: CardDetail) => (
+                    <div
+                      key={card.id}
+                      className="py-3 px-3 font-headline font-bold text-on-surface text-sm min-w-0 break-words"
+                    >
+                      {card.name}
+                    </div>
                   ))}
-                </tbody>
-              </table>
+                  {Array.from({ length: MAX_CARDS - validCards.length }).map((_, i) => (
+                    <div key={`empty-${i}`} className="py-3 px-3" />
+                  ))}
+                </div>
+                {/* Data rows */}
+                {COMPARE_ROWS.map((row) => (
+                  <CompareRow
+                    key={row.label}
+                    label={row.label}
+                    values={validCards.map((card: CardDetail) => row.render(card))}
+                  />
+                ))}
+              </div>
             </div>
 
             {/* Reward rules comparison */}

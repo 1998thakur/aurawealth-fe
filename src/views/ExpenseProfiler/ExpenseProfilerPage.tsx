@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import clsx from 'clsx';
-import AppLayout from '../../components/Layout/AppLayout';
+import PublicLayout from '../../components/Layout/PublicLayout';
 import SpendInput from '../../components/SpendInput';
 import { cardsApi } from '../../api/cards';
 import { expenseApi } from '../../api/expense';
@@ -163,7 +163,8 @@ export default function ExpenseProfilerPage() {
   const totalMonthly = Object.values(spendData).reduce((a, b) => a + b, 0);
 
   return (
-    <AppLayout>
+    <PublicLayout>
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
       {/* Header */}
       <div className="mb-8">
         <h1 className="font-headline font-bold text-2xl text-on-surface mb-1">
@@ -493,6 +494,7 @@ export default function ExpenseProfilerPage() {
           )}
         </div>
       </div>
-    </AppLayout>
+      </div>
+    </PublicLayout>
   );
 }

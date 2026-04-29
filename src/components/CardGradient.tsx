@@ -1,3 +1,4 @@
+'use client';
 
 import { useState } from 'react';
 import clsx from 'clsx';
@@ -43,9 +44,8 @@ export default function CardGradient({
   const showImage = !!imageUrl && !imgError;
 
   if (showImage) {
-    // Use natural credit card aspect ratio (85.6mm × 53.98mm ≈ 86:54)
     return (
-      <div className="rounded-2xl overflow-hidden bg-white w-full aspect-[86/54] relative">
+      <div className={clsx('rounded-2xl overflow-hidden bg-white relative', className)}>
         <img
           src={imageUrl}
           alt={`${name} card`}

@@ -38,8 +38,9 @@ export default function PublicLayout({ children }: PublicLayoutProps) {
             {/* Center nav links */}
             <nav className="hidden md:flex items-center gap-1 flex-1 justify-center">
               <Link href="/cards" className={navClass('/cards')}>Find a Card</Link>
-              <Link href="/simulator" className={navClass('/simulator')}>Rewards Calculator</Link>
               <Link href="/compare" className={navClass('/compare')}>Compare Cards</Link>
+              <Link href="/expense-profiler" className={navClass('/expense-profiler')}>Get Recommendations</Link>
+              <Link href="/simulator" className={navClass('/simulator')}>Rewards Calculator</Link>
               <Link href="/blog" className={navClass('/blog')}>Blog</Link>
             </nav>
 
