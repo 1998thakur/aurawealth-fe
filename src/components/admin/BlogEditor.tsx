@@ -42,6 +42,7 @@ export default function BlogEditor({ content, onChange, placeholder }: Props) {
   const [linkUrl, setLinkUrl] = useState('');
 
   const editor = useEditor({
+    immediatelyRender: false,
     extensions: [
       StarterKit,
       LinkExtension.configure({

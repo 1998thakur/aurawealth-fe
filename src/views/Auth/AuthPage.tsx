@@ -10,6 +10,11 @@ import type { LoginRequest, OtpVerifyPayload, RegisterRequest } from '../../type
 
 type Tab = 'signin' | 'signup';
 
+const ADMIN_ROLES = ['SUPER_ADMIN', 'ADMIN', 'EDITOR', 'VIEWER'];
+function redirectAfterLogin(role?: string | null) {
+  return role && ADMIN_ROLES.includes(role) ? '/admin/blogs' : '/dashboard';
+}
+
 function ErrorMessage({ message }: { message: string }) {
   return (
     <div className="flex items-center gap-2 bg-error-container text-error text-sm font-body px-3 py-2 rounded-xl">
@@ -46,7 +51,7 @@ export default function AuthPage() {
     mutationFn: (data: LoginRequest) => authApi.login(data),
     onSuccess: (data) => {
       login(data.accessToken, data.user);
-      router.push('/dashboard');
+      router.push(redirectAfterLogin(data.user.role));
     },
     onError: (err: unknown) => {
       const msg = err instanceof Error ? err.message : 'Invalid email or password';
@@ -70,7 +75,7 @@ export default function AuthPage() {
     mutationFn: (data: OtpVerifyPayload) => authApi.verifyOtp(data),
     onSuccess: (data) => {
       login(data.accessToken, data.user);
-      router.push('/dashboard');
+      router.push(redirectAfterLogin(data.user.role));
     },
     onError: (err: unknown) => {
       const msg = err instanceof Error ? err.message : 'Invalid OTP';
@@ -82,7 +87,7 @@ export default function AuthPage() {
     mutationFn: (data: RegisterRequest) => authApi.register(data),
     onSuccess: (data) => {
       login(data.accessToken, data.user);
-      router.push('/dashboard');
+      router.push(redirectAfterLogin(data.user.role));
     },
     onError: (err: unknown) => {
       const msg = err instanceof Error ? err.message : 'Registration failed';
