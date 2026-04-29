@@ -15,11 +15,12 @@ export const cardsApi = {
   getCards: async (params: CardListParams = {}): Promise<PagedResponse<CardSummary>> => {
     const searchParams = new URLSearchParams();
 
+    // Spring @RequestParam List<String> expects repeated keys without brackets: tiers=X&tiers=Y
     if (params.tiers?.length) {
-      params.tiers.forEach((t) => searchParams.append('tiers[]', t));
+      params.tiers.forEach((t) => searchParams.append('tiers', t));
     }
     if (params.rewardTypes?.length) {
-      params.rewardTypes.forEach((r) => searchParams.append('rewardTypes[]', r));
+      params.rewardTypes.forEach((r) => searchParams.append('rewardTypes', r));
     }
     if (params.annualFeeMax !== undefined) {
       searchParams.set('annualFeeMax', String(params.annualFeeMax));
@@ -29,6 +30,9 @@ export const cardsApi = {
     }
     if (params.hasLoungeAccess !== undefined) {
       searchParams.set('hasLoungeAccess', String(params.hasLoungeAccess));
+    }
+    if (params.hasZeroForex !== undefined) {
+      searchParams.set('hasZeroForex', String(params.hasZeroForex));
     }
     if (params.search) searchParams.set('search', params.search);
     if (params.sort) searchParams.set('sort', params.sort);
