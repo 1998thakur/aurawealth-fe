@@ -265,20 +265,25 @@ export default function BlogListPage() {
   // Paginated list
   const { data: postsPage, isLoading, isFetching } = useQuery({
     queryKey: ['blog', 'list', categoryParam, page],
-    queryFn: async () => {
-      const result = await blogApi.getPosts({ page, size: 9, category: categoryParam });
-      if (page === 0) {
-        setAllPosts(result.items);
-      } else {
-        setAllPosts((prev) => [...prev, ...result.items]);
-      }
-      return result;
-    },
+    queryFn: () => blogApi.getPosts({ page, size: 9, category: categoryParam }),
     staleTime: 5 * 60 * 1000,
   });
 
+  // Accumulate posts from query data (handles both fresh fetches and cached hits)
+  useEffect(() => {
+    if (!postsPage) return;
+    if (page === 0) {
+      setAllPosts(postsPage.items);
+    } else {
+      setAllPosts((prev) => [...prev, ...postsPage.items]);
+    }
+  }, [postsPage, page]);
+
   function handleCategoryChange(cat: Category) {
-    setActiveCategory(cat);
+    // Clicking the active non-All category deselects it (goes back to All)
+    const next: Category = activeCategory === cat && cat !== 'All' ? 'All' : cat;
+    if (next === activeCategory) return;
+    setActiveCategory(next);
     setPage(0);
     setAllPosts([]);
   }
