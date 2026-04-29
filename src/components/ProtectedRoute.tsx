@@ -19,7 +19,6 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
     if (!state.isAuthenticated) {
       router.replace('/auth');
     } else if (state.user?.role && ADMIN_ROLES.includes(state.user.role)) {
-      // Admin users don't belong in the regular app — send them to the admin portal
       router.replace('/admin/blogs');
     }
   }, [state.isLoading, state.isAuthenticated, state.user?.role, router]);

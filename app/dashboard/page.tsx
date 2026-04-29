@@ -1,10 +1,5 @@
-import ProtectedRoute from '../../src/components/ProtectedRoute';
-import DashboardPage from '../../src/views/Dashboard/DashboardPage';
+import { redirect } from 'next/navigation';
 
-export default function Page() {
-  return (
-    <ProtectedRoute>
-      <DashboardPage />
-    </ProtectedRoute>
-  );
+export default function DashboardRedirect() {
+  redirect('/');
 }

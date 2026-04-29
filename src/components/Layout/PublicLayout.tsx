@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '../../store/authStore';
 
 interface PublicLayoutProps {
@@ -9,8 +9,14 @@ interface PublicLayoutProps {
 }
 
 export default function PublicLayout({ children }: PublicLayoutProps) {
-  const { state } = useAuth();
+  const { state, logout } = useAuth();
   const pathname = usePathname();
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    await logout();
+    router.push('/auth');
+  };
 
   function navClass(path: string) {
     const isActive = pathname === path || (path !== '/' && pathname?.startsWith(path));
@@ -47,7 +53,27 @@ export default function PublicLayout({ children }: PublicLayoutProps) {
             {/* Right CTA */}
             <div className="ml-auto flex items-center gap-3">
               {state.isAuthenticated ? (
-                <Link href="/dashboard" className="btn-primary text-sm py-2 px-4">Dashboard</Link>
+                <>
+                  {state.user && (
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 bg-primary-fixed rounded-full flex items-center justify-center shrink-0">
+                        <span className="font-headline font-bold text-primary text-sm">
+                          {state.user.name.charAt(0).toUpperCase()}
+                        </span>
+                      </div>
+                      <span className="font-body text-sm text-on-surface hidden lg:block truncate max-w-[120px]">
+                        {state.user.name}
+                      </span>
+                    </div>
+                  )}
+                  <button
+                    onClick={handleLogout}
+                    className="font-body text-sm font-medium text-error hover:bg-error-container px-3 py-1.5 rounded-xl transition-colors flex items-center gap-1.5"
+                  >
+                    <span className="material-symbols-outlined text-base">logout</span>
+                    <span className="hidden sm:block">Sign Out</span>
+                  </button>
+                </>
               ) : (
                 <>
                   <Link

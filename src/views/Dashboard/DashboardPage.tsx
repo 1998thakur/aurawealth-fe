@@ -4,7 +4,7 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
-import AppLayout from '../../components/Layout/AppLayout';
+import PublicLayout from '../../components/Layout/PublicLayout';
 import MetricCard from '../../components/MetricCard';
 import CardGradient from '../../components/CardGradient';
 import { useAuth } from '../../store/authStore';
@@ -84,7 +84,8 @@ export default function DashboardPage() {
   const topCard = recommendations?.items[0];
 
   return (
-    <AppLayout>
+    <PublicLayout>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Header */}
       <div className="mb-8">
         <h1 className="font-headline font-bold text-2xl text-on-surface mb-1">
@@ -322,6 +323,7 @@ export default function DashboardPage() {
           </div>
         </div>
       )}
-    </AppLayout>
+      </div>
+    </PublicLayout>
   );
 }

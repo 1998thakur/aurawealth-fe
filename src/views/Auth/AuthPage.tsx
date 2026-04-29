@@ -12,7 +12,7 @@ type Tab = 'signin' | 'signup';
 
 const ADMIN_ROLES = ['SUPER_ADMIN', 'ADMIN', 'EDITOR', 'VIEWER'];
 function redirectAfterLogin(role?: string | null) {
-  return role && ADMIN_ROLES.includes(role) ? '/admin/blogs' : '/dashboard';
+  return role && ADMIN_ROLES.includes(role) ? '/admin/blogs' : '/';
 }
 
 function ErrorMessage({ message }: { message: string }) {
