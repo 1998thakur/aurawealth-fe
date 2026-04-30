@@ -10,8 +10,9 @@ export const recommendationsApi = {
     return response.data;
   },
 
-  getLatest: async (): Promise<RecommendationSet> => {
-    const response = await apiClient.get<RecommendationSet>('/recommendations/latest');
+  getLatest: async (profileId?: string): Promise<RecommendationSet> => {
+    const params = profileId ? { profileId } : {};
+    const response = await apiClient.get<RecommendationSet>('/recommendations/latest', { params });
     return response.data;
   },
 

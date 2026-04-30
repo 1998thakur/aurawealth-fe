@@ -1,19 +1,32 @@
 import apiClient from './client';
 import type {
-  CreateExpenseProfileRequest,
   ExpenseProfile,
   SpendPreview,
   UpdateExpenseItemsRequest,
 } from '../types/expense';
 
 export const expenseApi = {
-  createProfile: async (data: CreateExpenseProfileRequest = {}): Promise<ExpenseProfile> => {
-    const response = await apiClient.post<ExpenseProfile>('/expense-profiles', data);
+  listProfiles: async (): Promise<ExpenseProfile[]> => {
+    const response = await apiClient.get<ExpenseProfile[]>('/expense-profiles');
     return response.data;
+  },
+
+  createProfile: async (label?: string): Promise<ExpenseProfile> => {
+    const response = await apiClient.post<ExpenseProfile>('/expense-profiles', label ? { label } : {});
+    return response.data;
+  },
+
+  deleteProfile: async (id: string): Promise<void> => {
+    await apiClient.delete(`/expense-profiles/${id}`);
   },
 
   getActiveProfile: async (): Promise<ExpenseProfile> => {
     const response = await apiClient.get<ExpenseProfile>('/expense-profiles/active');
+    return response.data;
+  },
+
+  getProfile: async (id: string): Promise<ExpenseProfile> => {
+    const response = await apiClient.get<ExpenseProfile>(`/expense-profiles/${id}`);
     return response.data;
   },
 

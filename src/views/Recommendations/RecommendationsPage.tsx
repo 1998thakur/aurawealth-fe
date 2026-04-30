@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
 import clsx from 'clsx';
@@ -166,15 +166,17 @@ function SkeletonCard() {
 
 export default function RecommendationsPage() {
   const params = useParams();
+  const searchParams = useSearchParams();
   const setId = params?.setId as string | undefined;
+  const profileId = searchParams.get('profileId') ?? undefined;
   const [filterCategory, setFilterCategory] = useState<FilterCategory>('ALL');
   const [feeMax, setFeeMax] = useState(20000);
   const [selectedRewardTypes, setSelectedRewardTypes] = useState<RewardType[]>([]);
 
   const { data, isLoading, error } = useQuery({
-    queryKey: ['recommendations', setId ?? 'latest'],
+    queryKey: ['recommendations', setId ?? 'latest', profileId],
     queryFn: () =>
-      setId ? recommendationsApi.getById(setId) : recommendationsApi.getLatest(),
+      setId ? recommendationsApi.getById(setId) : recommendationsApi.getLatest(profileId),
     retry: false,
   });
 
@@ -335,7 +337,7 @@ export default function RecommendationsPage() {
                     Update your spending profile for more accurate recommendations.
                   </p>
                   <Link
-                    href="/expense-profiler"
+                    href={profileId ? `/expense-profiler?profileId=${profileId}` : '/expense-profiler'}
                     className="font-body text-xs text-primary font-semibold hover:underline"
                   >
                     Update Profile →

@@ -61,6 +61,16 @@ export default function AdminGuard({ children }: { children: React.ReactNode }) 
             >
               Blog Posts
             </Link>
+            <Link
+              href="/admin/cards"
+              className={`text-sm ${
+                pathname?.startsWith('/admin/cards')
+                  ? 'text-blue-600 font-medium'
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              Cards
+            </Link>
           </nav>
         </div>
         <div className="flex items-center gap-4">

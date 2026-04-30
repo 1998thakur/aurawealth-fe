@@ -1,9 +1,13 @@
 export interface ExpenseProfile {
   id: string;
+  userId?: string;
+  sessionId?: string;
+  label?: string;
   isActive: boolean;
   totalMonthlyInr: number;
   completenessPct: number;
   loungeAccessPreferred: boolean;
+  createdAt: string;
   lineItems: LineItem[];
 }
 
@@ -34,6 +38,7 @@ export interface CreateExpenseProfileRequest {
 
 export interface UpdateExpenseItemsRequest {
   items: LineItem[];
+  loungeAccessPreferred?: boolean;
 }
 
 export type TravelFrequency = 'RARE' | '1_2_TIMES' | '3_5_TIMES' | '6_PLUS_TIMES';

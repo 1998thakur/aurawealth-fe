@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import clsx from 'clsx';
 import PublicLayout from '../../components/Layout/PublicLayout';
@@ -9,6 +9,7 @@ import SpendInput from '../../components/SpendInput';
 import { cardsApi } from '../../api/cards';
 import { expenseApi } from '../../api/expense';
 import { recommendationsApi } from '../../api/recommendations';
+import { useProfile } from '../../store/profileStore';
 import type { TravelFrequency } from '../../types/expense';
 
 const STEP_LABELS = ['Monthly Spending', 'Travel & Preferences', 'Your Profile'];
@@ -96,8 +97,14 @@ const REWARD_TYPE_OPTIONS: { value: 'CASHBACK' | 'POINTS' | 'MILES'; label: stri
 
 export default function ExpenseProfilerPage() {
   const router = useRouter();
-  const [step, setStep] = useState(0);
+  const searchParams = useSearchParams();
+  const { selectedProfileId } = useProfile();
 
+  // profileId: from URL first, then from global selection
+  const urlProfileId = searchParams.get('profileId');
+  const profileId = urlProfileId ?? selectedProfileId;
+
+  const [step, setStep] = useState(0);
   const [spendData, setSpendData] = useState<SpendData>({});
   const [travelData, setTravelData] = useState<TravelData>({
     domesticFlightsPerMonth: 0,
@@ -118,16 +125,35 @@ export default function ExpenseProfilerPage() {
     queryFn: cardsApi.getCategories,
   });
 
+  // Load existing profile items when editing an existing profile
+  const { data: existingProfile } = useQuery({
+    queryKey: ['expense-profiles', profileId],
+    queryFn: () => expenseApi.getProfile(profileId!),
+    enabled: !!profileId,
+  });
+
+  // Pre-populate form with existing data
+  useEffect(() => {
+    if (!existingProfile) return;
+    const spend: SpendData = {};
+    existingProfile.lineItems.forEach((item) => {
+      spend[item.categoryId] = item.monthlyAmountInr;
+    });
+    setSpendData(spend);
+    if (existingProfile.loungeAccessPreferred !== undefined) {
+      setTravelData((prev) => ({ ...prev, loungeAccessPreferred: existingProfile.loungeAccessPreferred }));
+    }
+  }, [existingProfile]);
+
   const displayCategories = categories?.length ? categories : DEFAULT_CATEGORIES;
 
   const createProfileMutation = useMutation({
-    mutationFn: () =>
-      expenseApi.createProfile({ loungeAccessPreferred: travelData.loungeAccessPreferred }),
+    mutationFn: () => expenseApi.createProfile(),
   });
 
   const updateItemsMutation = useMutation({
     mutationFn: ({ id, items }: { id: string; items: { categoryId: string; monthlyAmountInr: number }[] }) =>
-      expenseApi.updateItems(id, { items }),
+      expenseApi.updateItems(id, { items, loungeAccessPreferred: travelData.loungeAccessPreferred }),
   });
 
   const generateRecsMutation = useMutation({
@@ -138,17 +164,16 @@ export default function ExpenseProfilerPage() {
   const handleFinalSubmit = async () => {
     setError('');
     try {
-      const profile = await createProfileMutation.mutateAsync();
+      // Use existing profile or create a new one
+      const targetProfileId = profileId ?? (await createProfileMutation.mutateAsync()).id;
 
       const items = Object.entries(spendData)
         .filter(([, amount]) => amount > 0)
         .map(([categoryId, monthlyAmountInr]) => ({ categoryId, monthlyAmountInr }));
 
-      if (items.length > 0) {
-        await updateItemsMutation.mutateAsync({ id: profile.id, items });
-      }
+      await updateItemsMutation.mutateAsync({ id: targetProfileId, items });
 
-      const recs = await generateRecsMutation.mutateAsync(profile.id);
+      const recs = await generateRecsMutation.mutateAsync(targetProfileId);
       router.push(`/recommendations/${recs.id}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong. Please try again.');

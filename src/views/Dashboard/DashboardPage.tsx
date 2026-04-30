@@ -1,15 +1,17 @@
-
 'use client';
 
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import PublicLayout from '../../components/Layout/PublicLayout';
 import MetricCard from '../../components/MetricCard';
 import CardGradient from '../../components/CardGradient';
 import { useAuth } from '../../store/authStore';
+import { useProfile } from '../../store/profileStore';
 import { recommendationsApi } from '../../api/recommendations';
 import { expenseApi } from '../../api/expense';
+import type { ExpenseProfile } from '../../types/expense';
 import type { RecommendationItem } from '../../types/recommendations';
 import type { CardNetwork, CardTier } from '../../types/cards';
 import { formatInr } from '../../utils/format';
@@ -57,25 +59,143 @@ function RecommendationMiniCard({ item }: { item: RecommendationItem }) {
   );
 }
 
-export default function DashboardPage() {
-  const { state } = useAuth();
+// ─────────────────────────── Profile Sidebar ───────────────────────────
+
+function ProfileSidebar({
+  profiles,
+  selectedId,
+  onSelect,
+  onNew,
+  onDelete,
+  isCreating,
+}: {
+  profiles: ExpenseProfile[];
+  selectedId: string | null;
+  onSelect: (id: string) => void;
+  onNew: () => void;
+  onDelete: (id: string) => void;
+  isCreating: boolean;
+}) {
+  return (
+    <aside className="w-full lg:w-64 shrink-0">
+      <div className="bg-surface-container-lowest border border-outline-variant rounded-2xl overflow-hidden">
+        <div className="px-4 py-3 border-b border-outline-variant">
+          <h2 className="font-headline font-semibold text-sm text-on-surface">My Profiles</h2>
+        </div>
+
+        <ul className="py-2">
+          {profiles.map((p) => {
+            const name = p.label?.trim() || 'My Profile';
+            const isSelected = p.id === selectedId;
+            return (
+              <li key={p.id}>
+                <button
+                  onClick={() => onSelect(p.id)}
+                  className={`w-full text-left px-4 py-3 flex items-center gap-3 transition-colors group
+                    ${isSelected
+                      ? 'bg-primary/10 text-primary'
+                      : 'hover:bg-surface-container text-on-surface'
+                    }`}
+                >
+                  <span
+                    className={`material-symbols-outlined text-lg shrink-0 ${
+                      isSelected ? 'text-primary' : 'text-on-surface-variant'
+                    }`}
+                  >
+                    account_balance_wallet
+                  </span>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-body text-sm font-medium truncate">{name}</p>
+                    <p className="font-body text-xs text-on-surface-variant">
+                      {p.completenessPct}% complete · {formatInr(p.totalMonthlyInr)}/mo
+                    </p>
+                  </div>
+                  {isSelected && profiles.length > 1 && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onDelete(p.id);
+                      }}
+                      className="opacity-0 group-hover:opacity-100 text-error hover:text-error/80 shrink-0 transition-opacity"
+                      title="Delete profile"
+                    >
+                      <span className="material-symbols-outlined text-sm">delete</span>
+                    </button>
+                  )}
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+
+        <div className="px-4 py-3 border-t border-outline-variant">
+          <button
+            onClick={onNew}
+            disabled={isCreating}
+            className="w-full flex items-center gap-2 text-sm font-body font-medium text-primary hover:text-primary/80 transition-colors disabled:opacity-50"
+          >
+            <span className="material-symbols-outlined text-lg">add_circle</span>
+            {isCreating ? 'Creating…' : 'New Profile'}
+          </button>
+        </div>
+      </div>
+    </aside>
+  );
+}
+
+// ─────────────────────────── New Profile Modal ───────────────────────────
+
+function NewProfileModal({
+  onConfirm,
+  onCancel,
+  isLoading,
+}: {
+  onConfirm: (label: string) => void;
+  onCancel: () => void;
+  isLoading: boolean;
+}) {
+  const [label, setLabel] = useState('');
+
+  return (
+    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+      <div className="bg-surface rounded-2xl p-6 w-full max-w-sm shadow-xl">
+        <h3 className="font-headline font-semibold text-lg text-on-surface mb-4">New Profile</h3>
+        <input
+          autoFocus
+          type="text"
+          placeholder="e.g. Personal, Business, Travel…"
+          value={label}
+          onChange={(e) => setLabel(e.target.value)}
+          onKeyDown={(e) => e.key === 'Enter' && label.trim() && onConfirm(label.trim())}
+          className="w-full border border-outline rounded-xl px-4 py-2.5 text-sm font-body focus:outline-none focus:ring-2 focus:ring-primary/50 mb-4"
+        />
+        <div className="flex gap-3 justify-end">
+          <button onClick={onCancel} className="btn-outlined text-sm py-2 px-4">
+            Cancel
+          </button>
+          <button
+            onClick={() => label.trim() && onConfirm(label.trim())}
+            disabled={!label.trim() || isLoading}
+            className="btn-primary text-sm py-2 px-4 disabled:opacity-50"
+          >
+            {isLoading ? 'Creating…' : 'Create'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────── Profile Content ───────────────────────────
+
+function ProfileContent({ profile }: { profile: ExpenseProfile }) {
   const router = useRouter();
 
   const { data: recommendations, isLoading: recsLoading } = useQuery({
-    queryKey: ['recommendations', 'latest'],
-    queryFn: () => recommendationsApi.getLatest(),
+    queryKey: ['recommendations', 'latest', profile.id],
+    queryFn: () => recommendationsApi.getLatest(profile.id),
     retry: false,
   });
-
-  const { data: activeProfile, isLoading: profileLoading } = useQuery({
-    queryKey: ['expense-profiles', 'active'],
-    queryFn: () => expenseApi.getActiveProfile(),
-    retry: false,
-  });
-
-  const hour = new Date().getHours();
-  const greeting = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
-  const firstName = state.user?.name.split(' ')[0] ?? 'there';
 
   const totalValue = recommendations?.items.reduce(
     (acc, item) => acc + item.projectedAnnualValueInr,
@@ -84,49 +204,34 @@ export default function DashboardPage() {
   const topCard = recommendations?.items[0];
 
   return (
-    <PublicLayout>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      {/* Header */}
-      <div className="mb-8">
-        <h1 className="font-headline font-bold text-2xl text-on-surface mb-1">
-          {greeting}, {firstName} 👋
-        </h1>
-        <p className="font-body text-on-surface-variant text-sm">
-          Here's your CreditBrain summary for today.
+    <div className="flex-1 min-w-0">
+      {/* Profile header */}
+      <div className="mb-6">
+        <h2 className="font-headline font-bold text-xl text-on-surface">
+          {profile.label?.trim() || 'My Profile'}
+        </h2>
+        <p className="font-body text-sm text-on-surface-variant mt-0.5">
+          Monthly spend: {formatInr(profile.totalMonthlyInr)} · {profile.completenessPct}% profiled
         </p>
       </div>
 
       {/* Metrics row */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
         <MetricCard
           icon="auto_awesome"
           label="Wealth Velocity (Annual)"
-          value={
-            recsLoading
-              ? '—'
-              : totalValue !== undefined
-              ? formatInr(totalValue)
-              : '₹0'
-          }
-          trend={
-            recommendations
-              ? { direction: 'up', text: 'From top card' }
-              : undefined
-          }
+          value={recsLoading ? '—' : totalValue !== undefined ? formatInr(totalValue) : '₹0'}
+          trend={recommendations ? { direction: 'up', text: 'From top card' } : undefined}
           accent
         />
         <MetricCard
           icon="receipt_long"
           label="Profile Completeness"
-          value={
-            profileLoading ? '—' : activeProfile ? `${activeProfile.completenessPct}%` : 'Not set'
-          }
+          value={`${profile.completenessPct}%`}
           trend={
-            activeProfile
-              ? activeProfile.completenessPct < 100
-                ? { direction: 'neutral', text: 'Update profile' }
-                : { direction: 'up', text: 'Complete' }
-              : undefined
+            profile.completenessPct < 100
+              ? { direction: 'neutral', text: 'Update profile' }
+              : { direction: 'up', text: 'Complete' }
           }
         />
         <MetricCard
@@ -142,7 +247,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Profile completeness nudge */}
-      {activeProfile && activeProfile.completenessPct < 100 && (
+      {profile.completenessPct < 100 && (
         <div className="bg-primary-fixed/30 border border-primary/20 rounded-2xl p-4 mb-6 flex items-center gap-4">
           <span className="material-symbols-outlined text-primary text-2xl">info</span>
           <div className="flex-1">
@@ -150,30 +255,15 @@ export default function DashboardPage() {
               Complete your spending profile
             </p>
             <p className="font-body text-xs text-on-surface-variant">
-              You've profiled {activeProfile.completenessPct}% of your spending.
-              Add more categories for better recommendations.
+              You've profiled {profile.completenessPct}% of your spending. Add more categories for
+              better recommendations.
             </p>
           </div>
-          <Link href="/expense-profiler" className="btn-primary text-sm py-2 px-4 shrink-0">
+          <Link
+            href={`/expense-profiler?profileId=${profile.id}`}
+            className="btn-primary text-sm py-2 px-4 shrink-0"
+          >
             Update
-          </Link>
-        </div>
-      )}
-
-      {/* No profile nudge */}
-      {!profileLoading && !activeProfile && (
-        <div className="bg-primary-fixed/30 border border-primary/20 rounded-2xl p-6 mb-6 text-center">
-          <span className="material-symbols-outlined text-primary text-3xl mb-2 block">
-            receipt_long
-          </span>
-          <p className="font-body font-semibold text-on-surface mb-1">
-            Set up your spending profile
-          </p>
-          <p className="font-body text-sm text-on-surface-variant mb-4">
-            Tell us how you spend to get personalized card recommendations.
-          </p>
-          <Link href="/expense-profiler" className="btn-primary text-sm">
-            Start Profiling
           </Link>
         </div>
       )}
@@ -181,12 +271,10 @@ export default function DashboardPage() {
       {/* Top Recommendations */}
       <div className="mb-8">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="font-headline font-bold text-lg text-on-surface">
-            Top Recommendations
-          </h2>
+          <h3 className="font-headline font-bold text-base text-on-surface">Top Recommendations</h3>
           {recommendations && (
             <Link
-              href="/recommendations"
+              href={`/recommendations?profileId=${profile.id}`}
               className="font-body text-sm text-primary font-semibold hover:underline"
             >
               View all →
@@ -215,20 +303,27 @@ export default function DashboardPage() {
         ) : (
           <div className="text-center py-8 text-on-surface-variant font-body text-sm">
             No recommendations yet.{' '}
-            <Link href="/expense-profiler" className="text-primary font-semibold">
-              Create your profile
+            <Link
+              href={`/expense-profiler?profileId=${profile.id}`}
+              className="text-primary font-semibold"
+            >
+              Add your spending
             </Link>{' '}
             to get started.
           </div>
         )}
       </div>
 
-      {/* Quick actions */}
-      <div>
-        <h2 className="font-headline font-bold text-lg text-on-surface mb-4">Quick Actions</h2>
+      {/* Quick Actions */}
+      <div className="mb-8">
+        <h3 className="font-headline font-bold text-base text-on-surface mb-4">Quick Actions</h3>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
-            { icon: 'receipt_long', label: 'Update Spending', to: '/expense-profiler' },
+            {
+              icon: 'receipt_long',
+              label: 'Update Spending',
+              to: `/expense-profiler?profileId=${profile.id}`,
+            },
             { icon: 'balance', label: 'Compare Cards', to: '/compare' },
             { icon: 'calculate', label: 'Rewards Calculator', to: '/simulator' },
             { icon: 'credit_card', label: 'Browse Cards', to: '/cards' },
@@ -251,10 +346,8 @@ export default function DashboardPage() {
 
       {/* Top card spotlight */}
       {topCard && (
-        <div className="mt-8">
-          <h2 className="font-headline font-bold text-lg text-on-surface mb-4">
-            Your Best Match
-          </h2>
+        <div>
+          <h3 className="font-headline font-bold text-base text-on-surface mb-4">Your Best Match</h3>
           <div className="card-surface p-6 flex flex-col sm:flex-row gap-6">
             <CardGradient
               name={topCard.cardName}
@@ -267,12 +360,10 @@ export default function DashboardPage() {
             <div className="flex-1">
               <div className="flex items-start justify-between mb-3">
                 <div>
-                  <h3 className="font-headline font-bold text-lg text-on-surface">
+                  <h4 className="font-headline font-bold text-lg text-on-surface">
                     {topCard.cardName}
-                  </h3>
-                  <p className="font-body text-sm text-on-surface-variant">
-                    {topCard.issuerName}
-                  </p>
+                  </h4>
+                  <p className="font-body text-sm text-on-surface-variant">{topCard.issuerName}</p>
                 </div>
                 <div className="flex gap-2">
                   {(topCard.recommendationTags ?? []).slice(0, 2).map((tag) => (
@@ -309,13 +400,13 @@ export default function DashboardPage() {
                 {topCard.highlightBenefit ?? 'Top recommended card based on your spending profile.'}
               </p>
               <div className="flex gap-3">
-                <Link
-                  href={`/cards/${topCard.cardId}`}
-                  className="btn-outlined text-sm py-2 px-4"
-                >
+                <Link href={`/cards/${topCard.cardId}`} className="btn-outlined text-sm py-2 px-4">
                   View Details
                 </Link>
-                <Link href="/recommendations" className="btn-primary text-sm py-2 px-4">
+                <Link
+                  href={`/recommendations?profileId=${profile.id}`}
+                  className="btn-primary text-sm py-2 px-4"
+                >
                   All Recommendations
                 </Link>
               </div>
@@ -323,7 +414,119 @@ export default function DashboardPage() {
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+// ─────────────────────────── Main Page ───────────────────────────
+
+export default function DashboardPage() {
+  const { state } = useAuth();
+  const { selectedProfileId, setSelectedProfileId } = useProfile();
+  const queryClient = useQueryClient();
+  const [showNewModal, setShowNewModal] = useState(false);
+
+  const { data: profiles = [], isLoading: profilesLoading } = useQuery({
+    queryKey: ['expense-profiles'],
+    queryFn: () => expenseApi.listProfiles(),
+    retry: false,
+  });
+
+  // Auto-select first profile if nothing is stored or stored id is gone
+  useEffect(() => {
+    if (profiles.length === 0) return;
+    const found = profiles.find((p) => p.id === selectedProfileId);
+    if (!found) {
+      setSelectedProfileId(profiles[0].id);
+    }
+  }, [profiles, selectedProfileId, setSelectedProfileId]);
+
+  const selectedProfile = profiles.find((p) => p.id === selectedProfileId) ?? profiles[0] ?? null;
+
+  const createMutation = useMutation({
+    mutationFn: (label: string) => expenseApi.createProfile(label),
+    onSuccess: (newProfile) => {
+      queryClient.invalidateQueries({ queryKey: ['expense-profiles'] });
+      setSelectedProfileId(newProfile.id);
+      setShowNewModal(false);
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => expenseApi.deleteProfile(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['expense-profiles'] });
+    },
+  });
+
+  const handleDelete = (id: string) => {
+    if (profiles.length <= 1) return;
+    deleteMutation.mutate(id);
+    const next = profiles.find((p) => p.id !== id);
+    if (next) setSelectedProfileId(next.id);
+  };
+
+  const hour = new Date().getHours();
+  const greeting = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
+  const firstName = state.user?.name?.split(' ')[0] ?? 'there';
+
+  return (
+    <PublicLayout>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Greeting */}
+        <div className="mb-8">
+          <h1 className="font-headline font-bold text-2xl text-on-surface mb-1">
+            {greeting}, {firstName} 👋
+          </h1>
+          <p className="font-body text-on-surface-variant text-sm">
+            Here's your AuraWealth summary.
+          </p>
+        </div>
+
+        {/* Two-column layout */}
+        <div className="flex flex-col lg:flex-row gap-6">
+          {profilesLoading ? (
+            <aside className="w-full lg:w-64 shrink-0">
+              <div className="bg-surface-container-lowest border border-outline-variant rounded-2xl p-4 space-y-3">
+                {[1, 2].map((i) => (
+                  <SkeletonBlock key={i} className="h-14 rounded-xl" />
+                ))}
+              </div>
+            </aside>
+          ) : (
+            <ProfileSidebar
+              profiles={profiles}
+              selectedId={selectedProfile?.id ?? null}
+              onSelect={setSelectedProfileId}
+              onNew={() => setShowNewModal(true)}
+              onDelete={handleDelete}
+              isCreating={createMutation.isPending}
+            />
+          )}
+
+          {selectedProfile ? (
+            <ProfileContent profile={selectedProfile} />
+          ) : !profilesLoading ? (
+            <div className="flex-1 text-center py-16 text-on-surface-variant font-body text-sm">
+              No profiles yet.{' '}
+              <button
+                onClick={() => setShowNewModal(true)}
+                className="text-primary font-semibold"
+              >
+                Create your first profile
+              </button>
+            </div>
+          ) : null}
+        </div>
       </div>
+
+      {showNewModal && (
+        <NewProfileModal
+          onConfirm={(label) => createMutation.mutate(label)}
+          onCancel={() => setShowNewModal(false)}
+          isLoading={createMutation.isPending}
+        />
+      )}
     </PublicLayout>
   );
 }
