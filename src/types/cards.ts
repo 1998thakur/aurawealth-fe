@@ -10,6 +10,7 @@ export interface CardSummary {
   issuer: Issuer;
   tier: CardTier;
   network: CardNetwork;
+  networks: CardNetwork[];
   annualFee: number;
   rewardType: RewardType;
   pointValueInr: number;

@@ -1,8 +1,9 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
-import { adminCardsApi, type AdminCardDetail } from '../../../src/api/adminCards';
+import { adminCardsApi } from '../../../src/api/adminCards';
+import type { CardSummary } from '../../../src/types/cards';
 
 const TIER_BADGE: Record<string, string> = {
   ENTRY:         'bg-gray-100 text-gray-600',
@@ -12,37 +13,58 @@ const TIER_BADGE: Record<string, string> = {
   SUPER_PREMIUM: 'bg-rose-50 text-rose-700',
 };
 
+const PAGE_SIZE = 10;
+
 export default function AdminCardListPage() {
-  const [cards, setCards] = useState<AdminCardDetail[]>([]);
-  const [filtered, setFiltered] = useState<AdminCardDetail[]>([]);
+  const [cards, setCards] = useState<CardSummary[]>([]);
   const [search, setSearch] = useState('');
+  const [page, setPage] = useState(0);
+  const [total, setTotal] = useState(0);
+  const [hasMore, setHasMore] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  useEffect(() => {
-    adminCardsApi.listCards()
-      .then((data) => { setCards(data); setFiltered(data); })
+  const fetchCards = useCallback((p: number, q: string) => {
+    setLoading(true);
+    setError('');
+    adminCardsApi.listCards(p, PAGE_SIZE, q)
+      .then((data) => {
+        setCards(data.items);
+        setTotal(data.total ?? 0);
+        setHasMore(data.hasMore);
+      })
       .catch(() => setError('Failed to load cards'))
       .finally(() => setLoading(false));
   }, []);
 
+  // Debounce search — reset to page 0 on new query
   useEffect(() => {
-    const q = search.toLowerCase();
-    setFiltered(
-      q ? cards.filter((c) =>
-        c.name.toLowerCase().includes(q) ||
-        c.issuer.name.toLowerCase().includes(q) ||
-        c.tier.toLowerCase().includes(q) ||
-        c.network.toLowerCase().includes(q)
-      ) : cards
-    );
-  }, [search, cards]);
+    const t = setTimeout(() => {
+      setPage(0);
+      fetchCards(0, search);
+    }, 300);
+    return () => clearTimeout(t);
+  }, [search, fetchCards]);
+
+  // Re-fetch when page changes (but not when search changes — that's handled above)
+  useEffect(() => {
+    if (page === 0) return; // page 0 is already fetched by the search effect
+    fetchCards(page, search);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page]);
+
+  const totalPages = Math.ceil(total / PAGE_SIZE);
 
   return (
     <div>
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-gray-800">Credit Cards</h1>
+        <div>
+          <h1 className="text-2xl font-bold text-gray-800">Credit Cards</h1>
+          {total > 0 && (
+            <p className="text-sm text-gray-400 mt-0.5">{total} cards total</p>
+          )}
+        </div>
         <Link
           href="/admin/cards/new"
           className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
@@ -78,7 +100,7 @@ export default function AdminCardListPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
-              {filtered.map((card) => (
+              {cards.map((card) => (
                 <tr key={card.id} className="hover:bg-gray-50 transition-colors">
                   <td className="px-5 py-4">
                     <div className="font-medium text-gray-900 text-sm">{card.name}</div>
@@ -90,7 +112,15 @@ export default function AdminCardListPage() {
                       {card.tier}
                     </span>
                   </td>
-                  <td className="px-5 py-4 text-sm text-gray-600">{card.network}</td>
+                  <td className="px-5 py-4">
+                    <div className="flex flex-wrap gap-1">
+                      {(card.networks?.length ? card.networks : [card.network]).map((n) => (
+                        <span key={n} className="text-xs bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded font-mono">
+                          {n}
+                        </span>
+                      ))}
+                    </div>
+                  </td>
                   <td className="px-5 py-4 text-sm text-gray-600">
                     {card.annualFee === 0 ? 'Free' : `₹${card.annualFee.toLocaleString('en-IN')}`}
                   </td>
@@ -106,7 +136,7 @@ export default function AdminCardListPage() {
                 </tr>
               ))}
 
-              {!loading && filtered.length === 0 && (
+              {!loading && cards.length === 0 && (
                 <tr>
                   <td colSpan={7} className="px-5 py-12 text-center text-gray-400 text-sm">
                     {search ? 'No cards match your search' : 'No cards found'}
@@ -119,6 +149,34 @@ export default function AdminCardListPage() {
 
         {loading && (
           <div className="px-5 py-4 text-sm text-gray-400 border-t border-gray-100">Loading…</div>
+        )}
+
+        {/* Pagination */}
+        {!loading && totalPages > 1 && (
+          <div className="px-5 py-4 border-t border-gray-100 flex items-center justify-between">
+            <p className="text-sm text-gray-500">
+              Page {page + 1} of {totalPages}
+              <span className="ml-2 text-gray-400">
+                ({page * PAGE_SIZE + 1}–{Math.min((page + 1) * PAGE_SIZE, total)} of {total})
+              </span>
+            </p>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setPage((p) => p - 1)}
+                disabled={page === 0}
+                className="px-3 py-1.5 text-sm border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              >
+                ← Prev
+              </button>
+              <button
+                onClick={() => setPage((p) => p + 1)}
+                disabled={!hasMore}
+                className="px-3 py-1.5 text-sm border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              >
+                Next →
+              </button>
+            </div>
+          </div>
         )}
       </div>
     </div>

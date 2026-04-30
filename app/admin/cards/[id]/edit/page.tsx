@@ -73,9 +73,38 @@ function SectionCard({ title, children }: { title: string; children: React.React
 
 // ─── Basic Info Tab ───────────────────────────────────────────────────────────
 
+const ALL_NETWORKS = ['VISA', 'MASTERCARD', 'AMEX', 'RUPAY', 'DINERS'];
+
+function NetworkSelector({ selected, onChange }: { selected: string[]; onChange: (v: string[]) => void }) {
+  const toggle = (n: string) =>
+    onChange(selected.includes(n) ? selected.filter((x) => x !== n) : [...selected, n]);
+  return (
+    <div>
+      <label className="block text-sm font-medium text-gray-700 mb-1">Networks (all offered)</label>
+      <div className="flex flex-wrap gap-2">
+        {ALL_NETWORKS.map((n) => (
+          <button
+            key={n}
+            type="button"
+            onClick={() => toggle(n)}
+            className={`px-3 py-1 rounded-full text-xs font-semibold border transition-colors ${
+              selected.includes(n)
+                ? 'bg-blue-600 text-white border-blue-600'
+                : 'bg-white text-gray-600 border-gray-300 hover:border-blue-400'
+            }`}
+          >
+            {n}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function BasicInfoTab({ card, onSaved }: { card: AdminCardDetail; onSaved: (c: AdminCardDetail) => void }) {
   const [form, setForm] = useState<UpdateCardRequest>({
     name: card.name, slug: card.slug, tier: card.tier, network: card.network,
+    networks: card.networks?.length ? card.networks : [card.network],
     variant: card.variant ?? '', annualFee: card.annualFee, joiningFee: card.joiningFee,
     renewalFee: card.renewalFee, rewardType: card.rewardType, pointValueInr: card.pointValueInr,
     purchaseAprMin: card.purchaseAprMin, purchaseAprMax: card.purchaseAprMax,
@@ -121,11 +150,15 @@ function BasicInfoTab({ card, onSaved }: { card: AdminCardDetail; onSaved: (c: A
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <Select label="Tier" value={form.tier ?? ''} onChange={(v) => set('tier', v)} required
             options={['ENTRY','STANDARD','PREMIUM','ELITE','SUPER_PREMIUM'].map((t) => ({ value: t, label: t }))} />
-          <Select label="Network" value={form.network ?? ''} onChange={(v) => set('network', v)} required
+          <Select label="Primary Network" value={form.network ?? ''} onChange={(v) => set('network', v)} required
             options={['VISA','MASTERCARD','AMEX','RUPAY','DINERS'].map((n) => ({ value: n, label: n }))} />
           <Select label="Reward Type" value={form.rewardType ?? ''} onChange={(v) => set('rewardType', v)} required
             options={['POINTS','CASHBACK','MILES'].map((r) => ({ value: r, label: r }))} />
         </div>
+        <NetworkSelector
+          selected={form.networks ?? (form.network ? [form.network] : [])}
+          onChange={(nets) => setForm((prev) => ({ ...prev, networks: nets }))}
+        />
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <Field label="Variant" value={form.variant ?? ''} onChange={(v) => set('variant', v)} placeholder="e.g. Gold, Platinum" />
           <Field label="Point Value (₹)" value={n(form.pointValueInr)} onChange={(v) => set('pointValueInr', v)} type="number" placeholder="0.25" />

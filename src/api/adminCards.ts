@@ -1,4 +1,6 @@
 import adminClient from './adminClient';
+import apiClient from './client';
+import type { CardSummary, PagedResponse } from '../types/cards';
 
 // ─── Response types (match backend DTOs exactly) ────────────────────────────
 
@@ -55,6 +57,7 @@ export interface AdminCardDetail {
   issuer: AdminIssuer;
   tier: string;
   network: string;
+  networks: string[];
   variant?: string;
   annualFee: number;
   joiningFee?: number;
@@ -86,6 +89,7 @@ export interface CreateCardRequest {
   slug: string;
   tier: string;
   network: string;
+  networks?: string[];
   variant?: string;
   annualFee: number;
   joiningFee?: number;
@@ -103,7 +107,7 @@ export interface CreateCardRequest {
   applyUrl?: string;
 }
 
-export type UpdateCardRequest = Partial<CreateCardRequest>;
+export type UpdateCardRequest = Partial<CreateCardRequest> & { networks?: string[] };
 
 export interface CreateRewardRuleRequest {
   name: string;
@@ -150,14 +154,16 @@ export interface CreateMilestoneRequest {
 // ─── API ─────────────────────────────────────────────────────────────────────
 
 export const adminCardsApi = {
-  // Card CRUD
-  listCards: async (): Promise<AdminCardDetail[]> => {
-    const res = await adminClient.get<AdminCardDetail[]>('/admin/v1/cards');
+  // Card listing — uses public /api/v1/cards (supports pagination + search)
+  listCards: async (page = 0, size = 10, search?: string): Promise<PagedResponse<CardSummary>> => {
+    const params: Record<string, string | number> = { page, size };
+    if (search?.trim()) params.search = search.trim();
+    const res = await apiClient.get<PagedResponse<CardSummary>>('/cards', { params });
     return res.data;
   },
 
   getCard: async (id: string): Promise<AdminCardDetail> => {
-    const res = await adminClient.get<AdminCardDetail>(`/admin/v1/cards/${id}`);
+    const res = await apiClient.get<AdminCardDetail>(`/cards/${id}`);
     return res.data;
   },
 
@@ -178,7 +184,7 @@ export const adminCardsApi = {
 
   // Reward Rules
   getRewardRules: async (cardId: string): Promise<AdminRewardRule[]> => {
-    const res = await adminClient.get<AdminRewardRule[]>(`/admin/v1/cards/${cardId}/reward-rules`);
+    const res = await apiClient.get<AdminRewardRule[]>(`/cards/${cardId}/reward-rules`);
     return res.data;
   },
 
@@ -189,7 +195,7 @@ export const adminCardsApi = {
 
   // Benefits
   getBenefits: async (cardId: string): Promise<AdminCardBenefit[]> => {
-    const res = await adminClient.get<AdminCardBenefit[]>(`/admin/v1/cards/${cardId}/benefits`);
+    const res = await apiClient.get<AdminCardBenefit[]>(`/cards/${cardId}/benefits`);
     return res.data;
   },
 
@@ -204,7 +210,7 @@ export const adminCardsApi = {
 
   // Milestones
   getMilestones: async (cardId: string): Promise<AdminCardMilestone[]> => {
-    const res = await adminClient.get<AdminCardMilestone[]>(`/admin/v1/cards/${cardId}/milestones`);
+    const res = await apiClient.get<AdminCardMilestone[]>(`/cards/${cardId}/milestones`);
     return res.data;
   },
 
