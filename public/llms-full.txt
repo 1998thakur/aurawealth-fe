@@ -1,0 +1,154 @@
+# CreditBrain — Full Content Index
+
+> CreditBrain is an AI-powered credit card recommendation and comparison platform for Indian consumers.
+> Site: https://creditbrain.in
+> API: https://creditbrain.in/api/v1
+
+---
+
+## Platform Overview
+
+CreditBrain solves a specific problem: most Indians don't know which credit card maximizes value for their actual spending. The platform lets users enter their monthly spend across up to 10 categories, then uses a reward-scoring engine to calculate the net annual value of every card in the database — accounting for reward rates, accelerators, caps, milestones, and fees.
+
+### Core Features
+
+**Expense Profiler** (`/expense-profiler`)
+- Input monthly spend across: online shopping, travel, dining, groceries, fuel, utilities, entertainment, insurance, EMI, other
+- Set preferences: lounge access preferred, zero-forex required, income range
+- Creates a spending profile used for personalized recommendations
+
+**AI Recommendations** (`/recommendations`)
+- Generates a ranked list of cards sorted by net annual value
+- Score = (expected rewards earned per year × point value) + (benefits value) − annual fee
+- Results include: why this card ranks well, top reward categories, key benefits
+- Supports multiple named spending profiles (e.g., "Personal", "Business", "Family")
+
+**Card Catalogue** (`/cards`)
+- Full database of Indian credit cards
+- Filter by: tier, reward type, annual fee range, lounge access, zero forex, network
+- Search by: card name, issuer, tier, network
+- Sort by: annual fee, reward rate, name
+
+**Rewards Calculator** (`/cards/[id]` → Rewards Calculator tab)
+- Enter a custom spend scenario for any card
+- Real-time calculation of points/cashback earned
+- Shows which spend categories earn accelerated rewards vs base rate
+
+**Profit Analysis** (`/cards/[id]` → Profit Analysis tab)
+- Net annual value = rewards earned − annual fee
+- Considers fee waivers based on spend thresholds
+- Milestone bonuses included in calculation
+
+**Compare Cards** (`/compare`)
+- Side-by-side comparison of 2–4 cards
+- Compares: fees, reward rates by category, benefits, eligibility
+
+**Rewards Simulator** (`/simulator`)
+- Test a spend scenario across multiple cards simultaneously
+- Useful for "which card should I use for this purchase?"
+
+---
+
+## Card Data Model
+
+Each card has:
+- **Basic info**: name, issuer, tier, network(s), annual fee, joining fee, renewal fee, tagline
+- **Reward structure**: reward type (POINTS/CASHBACK/MILES), point value in INR, base rate, accelerated rates by category
+- **Benefits**: lounge access, zero forex, insurance, dining, fuel surcharge waiver, concierge, etc.
+- **Milestones**: spend thresholds that unlock bonus rewards or fee waivers
+- **Eligibility**: minimum annual income, minimum credit score
+
+### Card Tiers
+- **ENTRY**: No-fee or low-fee cards (₹0–₹500/year), basic rewards
+- **STANDARD**: Mid-range cards (₹500–₹1,500/year), moderate rewards
+- **PREMIUM**: (₹1,500–₹5,000/year), lounge access, enhanced rewards
+- **ELITE**: (₹5,000–₹15,000/year), premium benefits, concierge
+- **SUPER_PREMIUM**: (₹15,000+/year), ultra-premium, dedicated RM, luxury perks
+
+### Reward Types
+- **POINTS**: Proprietary points redeemable against statement, products, travel (e.g., HDFC Reward Points, Axis Edge Rewards)
+- **CASHBACK**: Direct cashback credited to statement or account
+- **MILES**: Airline miles / travel points (e.g., Air Miles, InterMiles, Club Vistara)
+
+---
+
+## Supported Issuers
+
+HDFC Bank, SBI Card, Axis Bank, ICICI Bank, Kotak Mahindra Bank, American Express, RBL Bank, IndusInd Bank, IDFC First Bank, Yes Bank, Standard Chartered, Citibank, AU Small Finance Bank, Federal Bank, OneCard
+
+---
+
+## Public API
+
+Base URL: `https://creditbrain.in/api/v1`
+
+All responses are wrapped: `{ "success": true, "data": <payload> }`
+
+### Cards
+
+`GET /api/v1/cards` — Paginated card list
+- Query params: `page`, `size`, `search`, `tiers`, `rewardTypes`, `annualFeeMax`, `annualFeeMin`, `hasLoungeAccess`, `hasZeroForex`, `sort`
+- Returns: `{ items: CardSummary[], total, hasMore }`
+
+`GET /api/v1/cards/:id` — Card detail with reward rules, benefits, milestones
+
+`GET /api/v1/cards/:id/reward-rules` — All reward rules for a card
+
+`GET /api/v1/cards/:id/benefits` — All benefits for a card
+
+`GET /api/v1/cards/:id/milestones` — All spend milestones for a card
+
+### Blog
+
+`GET /api/v1/blog` — Paginated blog post list
+- Query params: `page`, `size`, `category`, `tag`
+
+`GET /api/v1/blog/:slug` — Full blog post by slug
+
+`GET /api/v1/blog/featured` — Featured posts
+
+### Other
+
+`GET /api/v1/issuers` — All card issuers
+
+`GET /api/v1/categories` — Spend categories with hierarchy
+
+---
+
+## Blog Topics
+
+Articles cover:
+- How to choose a credit card for your spending pattern
+- Maximizing rewards on travel, dining, and online shopping
+- Fee waiver strategies and milestone benefits
+- Comparison guides: HDFC Regalia vs Axis Magnus, etc.
+- Beginner guides to credit cards in India
+- Points vs cashback vs miles: which is better?
+- Lounge access cards in India
+- Zero forex cards for international travel
+
+See all posts: https://creditbrain.in/blog
+
+---
+
+## Site Map
+
+| URL | Description |
+|-----|-------------|
+| `/` | Home — hero, featured cards, how it works |
+| `/cards` | Card catalogue with filters |
+| `/cards/[id]` | Card detail — overview, calculator, profit analysis |
+| `/compare` | Multi-card comparison |
+| `/simulator` | Rewards simulator |
+| `/expense-profiler` | Spending input form |
+| `/recommendations` | AI-generated card recommendations |
+| `/blog` | Article listing |
+| `/blog/[slug]` | Individual blog post |
+| `/auth` | Login / register (private) |
+| `/dashboard` | User dashboard (private) |
+| `/settings` | Account settings (private) |
+
+---
+
+*Last updated: 2026-04-30*
+*Full sitemap: https://creditbrain.in/sitemap.xml*

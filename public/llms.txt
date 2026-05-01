@@ -1,0 +1,40 @@
+# CreditBrain
+
+> CreditBrain is an AI-powered credit card recommendation platform for Indian consumers. It helps users find the best credit card based on their spending patterns, income, and preferences — with tools to compare cards, simulate rewards, and calculate the true value of a card for their lifestyle.
+
+## What CreditBrain Does
+
+- **Personalized recommendations**: Enter your monthly spending across categories (travel, dining, groceries, fuel, shopping, etc.) and get a ranked list of credit cards optimized for maximum rewards.
+- **Rewards calculator**: Compute exact points/cashback earned on any card for a given spend pattern.
+- **Card comparison**: Side-by-side comparison of features, fees, rewards, and benefits across multiple cards.
+- **Profit analysis**: Net annual value after fees — tells you the true worth of holding a card.
+- **Card catalogue**: Full searchable database of Indian credit cards across all major banks and networks (Visa, Mastercard, Amex, RuPay, Diners Club).
+
+## Key Pages
+
+- [Home](https://creditbrain.in/) — Overview and entry point
+- [Card Catalogue](https://creditbrain.in/cards) — Browse and filter all credit cards
+- [Expense Profiler](https://creditbrain.in/expense-profiler) — Input spending habits to get personalized recommendations
+- [Recommendations](https://creditbrain.in/recommendations) — Your AI-generated ranked card recommendations
+- [Compare Cards](https://creditbrain.in/compare) — Side-by-side card comparison tool
+- [Rewards Simulator](https://creditbrain.in/simulator) — Simulate rewards for a given spending scenario
+- [Blog](https://creditbrain.in/blog) — Guides, tips, and analysis on Indian credit cards
+
+## Blog & Guides
+
+See [/blog](https://creditbrain.in/blog) for articles on credit card strategy, rewards optimization, and personal finance for Indian consumers.
+
+## Data & Coverage
+
+- Cards from: HDFC Bank, SBI Card, Axis Bank, ICICI Bank, Kotak Mahindra, American Express, RBL Bank, IndusInd Bank, IDFC First Bank, Yes Bank, Standard Chartered, Citibank, and more
+- Networks: Visa, Mastercard, American Express, RuPay, Diners Club
+- Card tiers: Entry, Standard, Premium, Elite, Super Premium
+- Reward types: Points, Cashback, Miles
+
+## API
+
+The public card catalogue API is available at `https://creditbrain.in/api/v1/cards` (JSON, paginated).
+
+## Full Content
+
+For a more detailed machine-readable version, see [/llms-full.txt](https://creditbrain.in/llms-full.txt)
