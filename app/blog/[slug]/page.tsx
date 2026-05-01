@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import BlogDetailPage from '../../../src/views/Blog/BlogDetailPage';
 import { blogApi } from '../../../src/api/blog';
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://credbrain.in';
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://creditbrain.in';
 
 export async function generateMetadata({
   params,

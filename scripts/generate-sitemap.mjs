@@ -6,7 +6,7 @@
  * Or add to build: "build": "tsc && vite build && node scripts/generate-sitemap.mjs"
  *
  * Env vars:
- *   SITE_URL   — canonical origin (default: https://credbrain.in)
+ *   SITE_URL   — canonical origin (default: https://creditbrain.in)
  *   API_URL    — backend base URL (default: http://localhost:8080)
  *   OUT_FILE   — output path (default: public/sitemap.xml)
  */
@@ -18,7 +18,7 @@ import { fileURLToPath } from 'url';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, '..');
 
-const SITE_URL = process.env.SITE_URL || 'https://credbrain.in';
+const SITE_URL = process.env.SITE_URL || 'https://creditbrain.in';
 const API_URL  = process.env.API_URL  || 'http://localhost:8080';
 const OUT_FILE = process.env.OUT_FILE || join(ROOT, 'public', 'sitemap.xml');
 

@@ -3,7 +3,7 @@ import './globals.css';
 import Providers from '../src/components/providers';
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? 'https://credbrain.in'),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? 'https://creditbrain.in'),
   title: {
     default: 'CreditBrain — Find Your Perfect Credit Card in India',
     template: '%s | CreditBrain',
