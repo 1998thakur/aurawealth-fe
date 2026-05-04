@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { adminCardsApi, type CreateCardRequest } from '../../../../src/api/adminCards';
+import { CardImageUpload } from '../../../../src/components/admin/CardImageUpload';
 
 const TIERS    = ['ENTRY','STANDARD','PREMIUM','ELITE','SUPER_PREMIUM'];
 const NETWORKS = ['VISA','MASTERCARD','AMEX','RUPAY','DINERS'];
@@ -19,6 +20,7 @@ export default function AdminNewCardPage() {
   });
   const [slugManual, setSlugManual] = useState(false);
   const [issuerId, setIssuerId] = useState('');
+  const [imageFile, setImageFile] = useState<File | null>(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
 
@@ -39,6 +41,14 @@ export default function AdminNewCardPage() {
     setSaving(true); setError('');
     try {
       const card = await adminCardsApi.createCard({ ...(form as CreateCardRequest), issuerId });
+      // Upload image if one was selected (card must exist first)
+      if (imageFile) {
+        try {
+          await adminCardsApi.uploadImage(card.id, imageFile);
+        } catch {
+          // Image upload failed — card was still created, user can retry upload in edit page
+        }
+      }
       router.push(`/admin/cards/${card.id}/edit`);
     } catch { setError('Failed to create card — check all required fields'); }
     finally { setSaving(false); }
@@ -119,6 +129,12 @@ export default function AdminNewCardPage() {
             <label className={lbl}>Tagline</label>
             <input value={form.tagline ?? ''} onChange={(e) => set('tagline', e.target.value)} className={inp} placeholder="India's most rewarding travel card" />
           </div>
+
+          <CardImageUpload
+            value={form.cardImageUrl ?? ''}
+            onChange={(url) => set('cardImageUrl', url)}
+            onFileSelected={(file) => setImageFile(file)}
+          />
         </div>
       </div>
 

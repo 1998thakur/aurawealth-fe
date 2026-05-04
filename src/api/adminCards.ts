@@ -222,4 +222,15 @@ export const adminCardsApi = {
   deleteMilestone: async (milestoneId: string): Promise<void> => {
     await adminClient.delete(`/admin/v1/milestones/${milestoneId}`);
   },
+
+  uploadImage: async (cardId: string, file: File): Promise<string> => {
+    const formData = new FormData();
+    formData.append('file', file);
+    // Pass FormData directly — Axios detects it and sets multipart/form-data with boundary
+    const res = await adminClient.post<{ cardImageUrl: string }>(
+      `/admin/v1/cards/${cardId}/image`,
+      formData,
+    );
+    return res.data.cardImageUrl;
+  },
 };

@@ -13,6 +13,7 @@ import {
   type CreateBenefitRequest,
   type CreateMilestoneRequest,
 } from '../../../../../src/api/adminCards';
+import { CardImageUpload } from '../../../../../src/components/admin/CardImageUpload';
 
 // ─── Shared helpers ─────────────────────────────────────────────────────────
 
@@ -186,7 +187,11 @@ function BasicInfoTab({ card, onSaved }: { card: AdminCardDetail; onSaved: (c: A
       </SectionCard>
 
       <SectionCard title="Media & Links">
-        <Field label="Card Image URL" value={form.cardImageUrl ?? ''} onChange={(v) => set('cardImageUrl', v)} placeholder="https://…" />
+        <CardImageUpload
+          cardId={card.id}
+          value={form.cardImageUrl ?? ''}
+          onChange={(url) => set('cardImageUrl', url)}
+        />
         <Field label="Apply URL" value={form.applyUrl ?? ''} onChange={(v) => set('applyUrl', v)} placeholder="https://…" />
       </SectionCard>
 
