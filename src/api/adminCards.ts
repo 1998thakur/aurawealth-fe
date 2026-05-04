@@ -223,14 +223,45 @@ export const adminCardsApi = {
     await adminClient.delete(`/admin/v1/milestones/${milestoneId}`);
   },
 
+  /**
+   * Upload a card image using native fetch() — NOT adminClient.
+   *
+   * Why: adminClient sets "Content-Type: application/json" as an instance-level
+   * default. Axios does not reliably strip that header when you pass FormData,
+   * so the multipart boundary never reaches the server and Spring rejects the
+   * request. fetch() sets the correct "multipart/form-data; boundary=..." header
+   * automatically when given a FormData body.
+   */
   uploadImage: async (cardId: string, file: File): Promise<string> => {
+    const token = typeof window !== 'undefined'
+      ? localStorage.getItem('aw_access_token')
+      : null;
+
     const formData = new FormData();
     formData.append('file', file);
-    // Pass FormData directly — Axios detects it and sets multipart/form-data with boundary
-    const res = await adminClient.post<{ cardImageUrl: string }>(
-      `/admin/v1/cards/${cardId}/image`,
-      formData,
-    );
-    return res.data.cardImageUrl;
+
+    // Do NOT set Content-Type — the browser sets "multipart/form-data; boundary=..."
+    const res = await fetch(`/admin/v1/cards/${cardId}/image`, {
+      method: 'POST',
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      body: formData,
+    });
+
+    if (res.status === 401) {
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('aw_access_token');
+        window.location.href = '/admin/login';
+      }
+      throw new Error('Unauthorized');
+    }
+
+    const json = await res.json();
+
+    if (!res.ok) {
+      throw new Error(json?.message ?? json?.error ?? 'Upload failed');
+    }
+
+    // Backend wraps response: { data: { cardImageUrl: "..." } }
+    return json.data?.cardImageUrl;
   },
 };
