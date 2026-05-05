@@ -28,6 +28,7 @@ export interface CardDetail extends CardSummary {
   minIncomeAnnualInr?: number;
   minCreditScore?: number;
   feeWaiverThresholdInr?: number;
+  applyUrl?: string;
   rewardRules: RewardRule[];
   benefits: CardBenefit[];
   milestones: CardMilestone[];

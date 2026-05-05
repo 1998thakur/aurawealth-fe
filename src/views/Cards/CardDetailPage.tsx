@@ -327,14 +327,25 @@ export default function CardDetailPage() {
               </div>
 
               <div className="flex gap-3 flex-wrap">
-                <a
-                  href="#apply"
-                  className="btn-primary text-sm py-2.5 px-5 flex items-center gap-2"
-                  onClick={(e) => e.preventDefault()}
-                >
-                  <span className="material-symbols-outlined text-base">open_in_new</span>
-                  Apply Now
-                </a>
+                {card.applyUrl ? (
+                  <a
+                    href={card.applyUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="btn-primary text-sm py-2.5 px-5 flex items-center gap-2"
+                  >
+                    <span className="material-symbols-outlined text-base">open_in_new</span>
+                    Apply Now
+                  </a>
+                ) : (
+                  <button
+                    disabled
+                    className="btn-primary text-sm py-2.5 px-5 flex items-center gap-2 opacity-40 cursor-not-allowed"
+                  >
+                    <span className="material-symbols-outlined text-base">open_in_new</span>
+                    Apply Now
+                  </button>
+                )}
                 <Link
                   href={`/compare?cards=${card.id}`}
                   className="btn-outlined text-sm py-2.5 px-5 flex items-center gap-2"
