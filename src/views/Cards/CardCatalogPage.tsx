@@ -143,6 +143,8 @@ export default function CardCatalogPage() {
     return () => removeJsonLd('breadcrumb-cards');
   }, []);
 
+  const [search, setSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [selectedTiers, setSelectedTiers] = useState<CardTier[]>([]);
   const [selectedRewardTypes, setSelectedRewardTypes] = useState<RewardType[]>([]);
   const [feeMax, setFeeMax] = useState(20000);
@@ -150,10 +152,20 @@ export default function CardCatalogPage() {
   const [sort, setSort] = useState('effectiveRate_desc');
   const [page, setPage] = useState(0);
 
+  // Debounce search input — wait 350 ms after user stops typing
+  useEffect(() => {
+    const t = setTimeout(() => {
+      setDebouncedSearch(search);
+      setPage(0);
+    }, 350);
+    return () => clearTimeout(t);
+  }, [search]);
+
   const { data, isLoading } = useQuery({
-    queryKey: ['cards', selectedTiers, selectedRewardTypes, feeMax, loungeOnly, sort, page],
+    queryKey: ['cards', debouncedSearch, selectedTiers, selectedRewardTypes, feeMax, loungeOnly, sort, page],
     queryFn: () =>
       cardsApi.getCards({
+        search: debouncedSearch || undefined,
         tiers: selectedTiers.length ? selectedTiers : undefined,
         rewardTypes: selectedRewardTypes.length ? selectedRewardTypes : undefined,
         annualFeeMax: feeMax,
@@ -179,6 +191,7 @@ export default function CardCatalogPage() {
   };
 
   const clearFilters = () => {
+    setSearch('');
     setSelectedTiers([]);
     setSelectedRewardTypes([]);
     setFeeMax(20000);
@@ -198,9 +211,32 @@ export default function CardCatalogPage() {
           <h1 className="font-headline font-bold text-3xl text-on-surface mb-2">
             Credit Card Catalog
           </h1>
-          <p className="font-body text-on-surface-variant">
+          <p className="font-body text-on-surface-variant mb-4">
             Browse and compare {data?.total ?? '75+'} credit cards across all major issuers.
           </p>
+
+          {/* Search bar */}
+          <div className="relative max-w-xl">
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-on-surface-variant text-xl pointer-events-none">
+              search
+            </span>
+            <input
+              type="text"
+              placeholder="Search by card name or issuer..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="input-field pl-10 pr-10"
+            />
+            {search && (
+              <button
+                onClick={() => setSearch('')}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-on-surface transition-colors"
+                aria-label="Clear search"
+              >
+                <span className="material-symbols-outlined text-xl">close</span>
+              </button>
+            )}
+          </div>
         </div>
 
         <div className="flex flex-col lg:flex-row gap-6">

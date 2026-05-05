@@ -225,7 +225,7 @@ function CardSlot({
           issuerName={card.issuer.name}
           network={card.network}
           tier={card.tier}
-          imageUrl={card.cardImageThumbnailUrl}
+          imageUrl={card.cardImageThumbnailUrl ?? card.cardImageUrl}
           className="w-full h-36"
         />
         <button
