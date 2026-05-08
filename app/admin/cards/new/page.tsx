@@ -1,9 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { adminCardsApi, type CreateCardRequest } from '../../../../src/api/adminCards';
-import { CardImageUpload } from '../../../../src/components/admin/CardImageUpload';
+import { cardsApi } from '../../../../src/api/cards';
+import type { Issuer } from '../../../../src/types/cards';
 
 const TIERS    = ['ENTRY','STANDARD','PREMIUM','ELITE','SUPER_PREMIUM'];
 const NETWORKS = ['VISA','MASTERCARD','AMEX','RUPAY','DINERS'];
@@ -15,16 +16,31 @@ function toSlug(s: string) {
 
 export default function AdminNewCardPage() {
   const router = useRouter();
+
+  const [issuers, setIssuers] = useState<Issuer[]>([]);
+  const [issuersLoading, setIssuersLoading] = useState(true);
+  const [issuersError, setIssuersError] = useState(false);
+
   const [form, setForm] = useState<Partial<CreateCardRequest>>({
-    annualFee: 0, tier: 'STANDARD', network: 'VISA', rewardType: 'POINTS',
+    issuerId: '', name: '', slug: '', tier: 'STANDARD', network: 'VISA',
+    rewardType: 'POINTS', annualFee: 0,
   });
   const [slugManual, setSlugManual] = useState(false);
-  const [issuerId, setIssuerId] = useState('');
-  const [imageFile, setImageFile] = useState<File | null>(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
 
-  function set(key: keyof CreateCardRequest, val: string | number) {
+  function loadIssuers() {
+    setIssuersLoading(true);
+    setIssuersError(false);
+    cardsApi.getIssuers()
+      .then(setIssuers)
+      .catch(() => setIssuersError(true))
+      .finally(() => setIssuersLoading(false));
+  }
+
+  useEffect(() => { loadIssuers(); }, []);
+
+  function set<K extends keyof CreateCardRequest>(key: K, val: CreateCardRequest[K]) {
     setForm((p) => ({ ...p, [key]: val }));
   }
 
@@ -33,29 +49,22 @@ export default function AdminNewCardPage() {
     if (!slugManual) set('slug', toSlug(v));
   }
 
-  async function handleSave() {
-    if (!issuerId.trim()) { setError('Issuer ID is required'); return; }
-    if (!form.name || !form.slug || !form.tier || !form.network || !form.rewardType) {
-      setError('Fill in all required fields'); return;
-    }
+  async function handleCreate() {
+    if (!form.issuerId) { setError('Please select an issuer'); return; }
+    if (!form.name?.trim() || !form.slug?.trim()) { setError('Card name and slug are required'); return; }
     setSaving(true); setError('');
     try {
-      const card = await adminCardsApi.createCard({ ...(form as CreateCardRequest), issuerId });
-      // Upload image if one was selected (card must exist first)
-      if (imageFile) {
-        try {
-          await adminCardsApi.uploadImage(card.id, imageFile);
-        } catch {
-          // Image upload failed — card was still created, user can retry upload in edit page
-        }
-      }
+      const card = await adminCardsApi.createCard(form as CreateCardRequest);
       router.push(`/admin/cards/${card.id}/edit`);
-    } catch { setError('Failed to create card — check all required fields'); }
-    finally { setSaving(false); }
+    } catch {
+      setError('Failed to create card — check all required fields');
+      setSaving(false);
+    }
   }
 
-  const inp = 'w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500';
+  const inp = 'w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white';
   const lbl = 'block text-sm font-medium text-gray-700 mb-1';
+  const req = <span className="text-red-500 ml-0.5">*</span>;
 
   return (
     <div className="max-w-2xl mx-auto">
@@ -66,82 +75,98 @@ export default function AdminNewCardPage() {
 
       {error && <div className="bg-red-50 text-red-700 px-4 py-3 rounded-lg mb-6 text-sm">{error}</div>}
 
-      <div className="space-y-6">
+      <div className="space-y-4">
+
+        {/* Identity */}
         <div className="bg-white rounded-2xl shadow p-6 space-y-4">
           <h2 className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Identity</h2>
 
           <div>
-            <label className={lbl}>Issuer ID <span className="text-red-500">*</span></label>
-            <input value={issuerId} onChange={(e) => setIssuerId(e.target.value)}
-              placeholder="UUID of the issuer" className={`${inp} font-mono`} />
+            <label className={lbl}>Issuer {req}</label>
+            {issuersError ? (
+              <div className="flex items-center gap-3">
+                <span className="text-sm text-red-600">Failed to load issuers</span>
+                <button onClick={loadIssuers} className="text-sm text-blue-600 hover:underline">Retry</button>
+              </div>
+            ) : (
+              <select
+                value={form.issuerId ?? ''}
+                onChange={(e) => set('issuerId', e.target.value)}
+                disabled={issuersLoading}
+                className={inp}
+              >
+                <option value="">{issuersLoading ? 'Loading issuers…' : '— Select issuer —'}</option>
+                {issuers.map((i) => (
+                  <option key={i.id} value={i.id}>{i.name}</option>
+                ))}
+              </select>
+            )}
           </div>
 
           <div>
-            <label className={lbl}>Card Name <span className="text-red-500">*</span></label>
-            <input value={form.name ?? ''} onChange={(e) => handleName(e.target.value)} className={inp} placeholder="HDFC Regalia Gold" />
+            <label className={lbl}>Card Name {req}</label>
+            <input value={form.name ?? ''} onChange={(e) => handleName(e.target.value)}
+              placeholder="HDFC Regalia Gold" className={inp} />
           </div>
 
           <div>
-            <label className={lbl}>Slug <span className="text-red-500">*</span></label>
+            <label className={lbl}>Slug {req}</label>
             <div className="flex gap-2 items-center">
               <input value={form.slug ?? ''} onChange={(e) => { setSlugManual(true); set('slug', e.target.value); }}
-                className={`${inp} font-mono flex-1`} />
+                className={`${inp} font-mono flex-1`} placeholder="hdfc-regalia-gold" />
               {slugManual && (
-                <button type="button" onClick={() => { setSlugManual(false); set('slug', toSlug(form.name ?? '')); }}
+                <button type="button"
+                  onClick={() => { setSlugManual(false); set('slug', toSlug(form.name ?? '')); }}
                   className="text-xs text-blue-600 hover:underline whitespace-nowrap">Auto</button>
               )}
             </div>
           </div>
+        </div>
 
+        {/* Classification */}
+        <div className="bg-white rounded-2xl shadow p-6 space-y-4">
+          <h2 className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Classification</h2>
           <div className="grid grid-cols-3 gap-4">
             <div>
-              <label className={lbl}>Tier <span className="text-red-500">*</span></label>
-              <select value={form.tier ?? ''} onChange={(e) => set('tier', e.target.value)} className={`${inp} bg-white`}>
+              <label className={lbl}>Tier {req}</label>
+              <select value={form.tier ?? ''} onChange={(e) => set('tier', e.target.value)} className={inp}>
                 {TIERS.map((t) => <option key={t}>{t}</option>)}
               </select>
             </div>
             <div>
-              <label className={lbl}>Network <span className="text-red-500">*</span></label>
-              <select value={form.network ?? ''} onChange={(e) => set('network', e.target.value)} className={`${inp} bg-white`}>
+              <label className={lbl}>Network {req}</label>
+              <select value={form.network ?? ''} onChange={(e) => set('network', e.target.value)} className={inp}>
                 {NETWORKS.map((n) => <option key={n}>{n}</option>)}
               </select>
             </div>
             <div>
-              <label className={lbl}>Reward Type <span className="text-red-500">*</span></label>
-              <select value={form.rewardType ?? ''} onChange={(e) => set('rewardType', e.target.value)} className={`${inp} bg-white`}>
+              <label className={lbl}>Reward Type {req}</label>
+              <select value={form.rewardType ?? ''} onChange={(e) => set('rewardType', e.target.value)} className={inp}>
                 {REWARDS.map((r) => <option key={r}>{r}</option>)}
               </select>
             </div>
           </div>
+        </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className={lbl}>Annual Fee (₹) <span className="text-red-500">*</span></label>
-              <input type="number" value={form.annualFee ?? 0} onChange={(e) => set('annualFee', Number(e.target.value))} className={inp} />
-            </div>
-            <div>
-              <label className={lbl}>Joining Fee (₹)</label>
-              <input type="number" value={form.joiningFee ?? ''} onChange={(e) => set('joiningFee', Number(e.target.value))} className={inp} />
-            </div>
+        {/* Fees */}
+        <div className="bg-white rounded-2xl shadow p-6 space-y-4">
+          <h2 className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Fees</h2>
+          <div className="max-w-xs">
+            <label className={lbl}>Annual Fee (₹) {req}</label>
+            <input type="number" value={form.annualFee ?? 0}
+              onChange={(e) => set('annualFee', Number(e.target.value))} className={inp} />
           </div>
-
-          <div>
-            <label className={lbl}>Tagline</label>
-            <input value={form.tagline ?? ''} onChange={(e) => set('tagline', e.target.value)} className={inp} placeholder="India's most rewarding travel card" />
-          </div>
-
-          <CardImageUpload
-            value={form.cardImageUrl ?? ''}
-            onChange={(url) => set('cardImageUrl', url)}
-            onFileSelected={(file) => setImageFile(file)}
-          />
         </div>
       </div>
 
-      <div className="mt-6 flex justify-end">
-        <button onClick={handleSave} disabled={saving}
-          className="bg-blue-600 text-white px-6 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50 transition-colors">
-          {saving ? 'Creating…' : 'Create Card'}
+      <p className="text-xs text-gray-400 mt-4 text-right">
+        You can add images, reward rules, benefits and milestones after creation.
+      </p>
+
+      <div className="mt-4 flex justify-end">
+        <button onClick={handleCreate} disabled={saving || issuersLoading}
+          className="bg-blue-600 text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50 transition-colors">
+          {saving ? 'Creating…' : 'Create Card →'}
         </button>
       </div>
     </div>
