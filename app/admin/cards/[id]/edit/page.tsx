@@ -213,11 +213,23 @@ function BasicInfoTab({ card, onSaved }: { card: AdminCardDetail; onSaved: (c: A
 
 // ─── Reward Rules Tab ─────────────────────────────────────────────────────────
 
-const RULE_TYPE_OPTIONS = ['GENERAL','CATEGORY','MERCHANT','ACCELERATED','CAPPED'].map((v) => ({ value: v, label: v }));
-const RATE_TYPE_OPTIONS = ['POINTS_PER_INR','CASHBACK_PCT','MILES_PER_INR'].map((v) => ({ value: v, label: v }));
+const RULE_TYPE_OPTIONS = [
+  { value: 'BASE',               label: 'Base Rate' },
+  { value: 'ACCELERATED',        label: 'Accelerated' },
+  { value: 'CAPPED_ACCELERATED', label: 'Capped Accelerated' },
+  { value: 'PROMOTIONAL',        label: 'Promotional' },
+  { value: 'FLAT_CASHBACK',      label: 'Flat Cashback' },
+];
+
+const RATE_TYPE_OPTIONS = [
+  { value: 'POINTS_PER_100_INR', label: 'Points per ₹100' },
+  { value: 'CASHBACK_PCT',       label: 'Cashback %' },
+  { value: 'MILES_PER_100_INR',  label: 'Miles per ₹100' },
+  { value: 'MULTIPLIER',         label: 'Multiplier (Nx)' },
+];
 
 const emptyRule = (): CreateRewardRuleRequest => ({
-  name: '', ruleType: 'GENERAL', rate: 0, rateType: 'POINTS_PER_INR', priority: 10,
+  name: '', ruleType: 'BASE', rate: 0, rateType: 'POINTS_PER_100_INR', priority: 10,
   isBaseRate: false,
 });
 
