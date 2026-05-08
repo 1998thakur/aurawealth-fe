@@ -154,7 +154,7 @@ function BasicInfoTab({ card, onSaved }: { card: AdminCardDetail; onSaved: (c: A
           <Select label="Primary Network" value={form.network ?? ''} onChange={(v) => set('network', v)} required
             options={['VISA','MASTERCARD','AMEX','RUPAY','DINERS'].map((n) => ({ value: n, label: n }))} />
           <Select label="Reward Type" value={form.rewardType ?? ''} onChange={(v) => set('rewardType', v)} required
-            options={['POINTS','CASHBACK','MILES'].map((r) => ({ value: r, label: r }))} />
+            options={['POINTS','CASHBACK','MILES','HYBRID'].map((r) => ({ value: r, label: r }))} />
         </div>
         <NetworkSelector
           selected={form.networks ?? (form.network ? [form.network] : [])}
@@ -395,7 +395,7 @@ function BenefitsTab({ cardId }: { cardId: string }) {
         <div className="bg-white rounded-2xl shadow p-6 space-y-4 border border-blue-100">
           <h4 className="font-semibold text-gray-700 text-sm">New Benefit</h4>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Field label="Category" value={form.category} onChange={(v) => setF('category', v)} required placeholder="LOUNGE_ACCESS, INSURANCE, DINING…" />
+            <Select label="Category" value={form.category} onChange={(v) => setF('category', v)} options={BENEFIT_CATEGORY_OPTIONS} required />
             <Field label="Name" value={form.name} onChange={(v) => setF('name', v)} required placeholder="Airport Lounge Access" />
             <Field label="Est. Annual Value (₹)" value={String(form.estimatedAnnualValueInr ?? '')} onChange={(v) => setF('estimatedAnnualValueInr', Number(v))} type="number" />
             <Field label="Quantity" value={String(form.quantity ?? '')} onChange={(v) => setF('quantity', Number(v))} type="number" />
@@ -454,8 +454,35 @@ function BenefitsTab({ cardId }: { cardId: string }) {
 
 // ─── Milestones Tab ───────────────────────────────────────────────────────────
 
-const PERIOD_OPTIONS = ['MONTHLY','QUARTERLY','HALF_YEARLY','ANNUAL','ONE_TIME'].map((v) => ({ value: v, label: v }));
-const MILESTONE_REWARD_TYPES = ['POINTS','VOUCHER','WAIVER','CASHBACK'].map((v) => ({ value: v, label: v }));
+const PERIOD_OPTIONS = [
+  { value: 'MONTHLY',   label: 'Monthly' },
+  { value: 'QUARTERLY', label: 'Quarterly' },
+  { value: 'ANNUAL',    label: 'Annual' },
+  { value: 'LIFETIME',  label: 'Lifetime' },
+];
+
+const MILESTONE_REWARD_TYPES = [
+  { value: 'POINTS',         label: 'Points' },
+  { value: 'VOUCHER',        label: 'Voucher' },
+  { value: 'FEE_WAIVER',     label: 'Fee Waiver' },
+  { value: 'BENEFIT_UPGRADE',label: 'Benefit Upgrade' },
+  { value: 'CASHBACK',       label: 'Cashback' },
+];
+
+const BENEFIT_CATEGORY_OPTIONS = [
+  { value: 'LOUNGE',           label: 'Lounge' },
+  { value: 'INSURANCE',        label: 'Insurance' },
+  { value: 'CONCIERGE',        label: 'Concierge' },
+  { value: 'HOTEL_STATUS',     label: 'Hotel Status' },
+  { value: 'FUEL_WAIVER',      label: 'Fuel Waiver' },
+  { value: 'DINING_OFFER',     label: 'Dining Offer' },
+  { value: 'LIFESTYLE',        label: 'Lifestyle' },
+  { value: 'FOREX',            label: 'Forex' },
+  { value: 'FRAUD_PROTECTION', label: 'Fraud Protection' },
+  { value: 'GOLF',             label: 'Golf' },
+  { value: 'WELLNESS',         label: 'Wellness' },
+  { value: 'EMI_OFFER',        label: 'EMI Offer' },
+];
 
 const emptyMilestone = (): CreateMilestoneRequest => ({
   spendThresholdInr: 0, period: 'ANNUAL', rewardType: 'POINTS', rewardDescription: '',

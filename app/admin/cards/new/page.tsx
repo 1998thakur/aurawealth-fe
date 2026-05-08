@@ -7,7 +7,7 @@ import { CardImageUpload } from '../../../../src/components/admin/CardImageUploa
 
 const TIERS    = ['ENTRY','STANDARD','PREMIUM','ELITE','SUPER_PREMIUM'];
 const NETWORKS = ['VISA','MASTERCARD','AMEX','RUPAY','DINERS'];
-const REWARDS  = ['POINTS','CASHBACK','MILES'];
+const REWARDS  = ['POINTS','CASHBACK','MILES','HYBRID'];
 
 function toSlug(s: string) {
   return s.toLowerCase().replace(/[^a-z0-9\s-]/g,'').replace(/\s+/g,'-').replace(/-+/g,'-').replace(/^-|-$/g,'');
