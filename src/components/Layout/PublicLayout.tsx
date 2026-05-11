@@ -132,14 +132,17 @@ export default function PublicLayout({ children }: PublicLayoutProps) {
               <div>
                 <p className="font-body font-semibold text-sm text-inverse-on-surface mb-3">Company</p>
                 <ul className="space-y-2">
-                  <li>
-                    <Link href="/blog" className="font-body text-sm text-inverse-on-surface/60 hover:text-inverse-on-surface transition-colors">
-                      Blog
-                    </Link>
-                  </li>
-                  {['About', 'Privacy Policy', 'Terms of Service', 'Contact'].map((label) => (
-                    <li key={label}>
-                      <span className="font-body text-sm text-inverse-on-surface/60 cursor-default">{label}</span>
+                  {[
+                    { label: 'Blog', href: '/blog' },
+                    { label: 'About', href: '/about' },
+                    { label: 'Privacy Policy', href: '/privacy' },
+                    { label: 'Terms of Service', href: '/terms' },
+                    { label: 'Contact', href: '/contact' },
+                  ].map((link) => (
+                    <li key={link.href}>
+                      <Link href={link.href} className="font-body text-sm text-inverse-on-surface/60 hover:text-inverse-on-surface transition-colors">
+                        {link.label}
+                      </Link>
                     </li>
                   ))}
                 </ul>
