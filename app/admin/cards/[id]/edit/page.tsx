@@ -233,11 +233,55 @@ const emptyRule = (): CreateRewardRuleRequest => ({
   isBaseRate: false,
 });
 
+function RuleForm({
+  title, form, setF, onSubmit, onCancel, saving, submitLabel,
+}: {
+  title: string;
+  form: CreateRewardRuleRequest;
+  setF: (key: keyof CreateRewardRuleRequest, val: string | number | boolean) => void;
+  onSubmit: () => void;
+  onCancel: () => void;
+  saving: boolean;
+  submitLabel: string;
+}) {
+  return (
+    <div className="bg-white rounded-2xl shadow p-6 space-y-4 border border-blue-100">
+      <h4 className="font-semibold text-gray-700 text-sm">{title}</h4>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <Field label="Name" value={form.name} onChange={(v) => setF('name', v)} required />
+        <Select label="Rule Type" value={form.ruleType} onChange={(v) => setF('ruleType', v)} options={RULE_TYPE_OPTIONS} required />
+        <Field label="Rate" value={String(form.rate)} onChange={(v) => setF('rate', Number(v))} type="number" required placeholder="1" />
+        <Select label="Rate Type" value={form.rateType} onChange={(v) => setF('rateType', v)} options={RATE_TYPE_OPTIONS} required />
+        <Field label="Priority" value={String(form.priority ?? 10)} onChange={(v) => setF('priority', Number(v))} type="number" />
+        <Field label="Cap / Month (pts)" value={String(form.capPerMonthPoints ?? '')} onChange={(v) => setF('capPerMonthPoints', Number(v))} type="number" />
+        <Field label="Cap / Year (pts)" value={String(form.capPerYearPoints ?? '')} onChange={(v) => setF('capPerYearPoints', Number(v))} type="number" />
+        <Field label="Valid From" value={form.validFrom ?? ''} onChange={(v) => setF('validFrom', v)} type="date" />
+        <Field label="Valid Until" value={form.validUntil ?? ''} onChange={(v) => setF('validUntil', v)} type="date" />
+      </div>
+      <div className="flex items-center gap-2">
+        <input type="checkbox" id="baseRate" checked={!!form.isBaseRate}
+          onChange={(e) => setF('isBaseRate', e.target.checked)} className="rounded border-gray-300" />
+        <label htmlFor="baseRate" className="text-sm text-gray-700">Base rate rule</label>
+      </div>
+      <Field label="Description" value={form.description ?? ''} onChange={(v) => setF('description', v)} as="textarea" />
+      <div className="flex justify-end gap-3">
+        <button onClick={onCancel} className="text-sm text-gray-500 hover:text-gray-700">Cancel</button>
+        <button onClick={onSubmit} disabled={saving}
+          className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700 disabled:opacity-50 transition-colors">
+          {saving ? 'Saving…' : submitLabel}
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function RewardRulesTab({ cardId }: { cardId: string }) {
   const [rules, setRules] = useState<AdminRewardRule[]>([]);
   const [loading, setLoading] = useState(true);
-  const [showForm, setShowForm] = useState(false);
-  const [form, setForm] = useState<CreateRewardRuleRequest>(emptyRule());
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [editingRule, setEditingRule] = useState<AdminRewardRule | null>(null);
+  const [addForm, setAddForm] = useState<CreateRewardRuleRequest>(emptyRule());
+  const [editForm, setEditForm] = useState<CreateRewardRuleRequest>(emptyRule());
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
 
@@ -245,60 +289,95 @@ function RewardRulesTab({ cardId }: { cardId: string }) {
     adminCardsApi.getRewardRules(cardId).then(setRules).catch(() => setError('Failed to load')).finally(() => setLoading(false));
   }, [cardId]);
 
-  function setF(key: keyof CreateRewardRuleRequest, val: string | number | boolean) {
-    setForm((prev) => ({ ...prev, [key]: val }));
+  function setAddF(key: keyof CreateRewardRuleRequest, val: string | number | boolean) {
+    setAddForm((prev) => ({ ...prev, [key]: val }));
+  }
+
+  function setEditF(key: keyof CreateRewardRuleRequest, val: string | number | boolean) {
+    setEditForm((prev) => ({ ...prev, [key]: val }));
+  }
+
+  function startEdit(rule: AdminRewardRule) {
+    setEditForm({
+      name: rule.name,
+      description: rule.description ?? '',
+      ruleType: rule.ruleType,
+      rate: rule.rate,
+      rateType: rule.rateType,
+      priority: rule.priority,
+      isBaseRate: rule.isBaseRate,
+      capPerMonthPoints: rule.capPerMonthPoints,
+      capPerYearPoints: rule.capPerYearPoints,
+      validFrom: rule.validFrom ?? '',
+      validUntil: rule.validUntil ?? '',
+    });
+    setEditingRule(rule);
+    setShowAddForm(false);
   }
 
   async function handleAdd() {
     setSaving(true); setError('');
     try {
-      const created = await adminCardsApi.createRewardRule(cardId, form);
+      const created = await adminCardsApi.createRewardRule(cardId, addForm);
       setRules((prev) => [...prev, created]);
-      setForm(emptyRule()); setShowForm(false);
+      setAddForm(emptyRule()); setShowAddForm(false);
     } catch { setError('Failed to add rule'); }
     finally { setSaving(false); }
+  }
+
+  async function handleUpdate() {
+    if (!editingRule) return;
+    setSaving(true); setError('');
+    try {
+      const updated = await adminCardsApi.updateRewardRule(editingRule.id, editForm);
+      setRules((prev) => prev.map((r) => r.id === updated.id ? updated : r));
+      setEditingRule(null);
+    } catch { setError('Failed to update rule'); }
+    finally { setSaving(false); }
+  }
+
+  async function handleDeactivate(id: string, name: string) {
+    if (!confirm(`Deactivate rule "${name}"?`)) return;
+    try {
+      await adminCardsApi.deactivateRewardRule(id);
+      setRules((prev) => prev.map((r) => r.id === id ? { ...r, isActive: false } : r));
+    } catch { alert('Failed to deactivate rule'); }
   }
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h3 className="font-semibold text-gray-800">Reward Rules ({rules.length})</h3>
-        <button onClick={() => setShowForm(!showForm)}
+        <button onClick={() => { setShowAddForm(!showAddForm); setEditingRule(null); }}
           className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors">
-          {showForm ? 'Cancel' : '+ Add Rule'}
+          {showAddForm ? 'Cancel' : '+ Add Rule'}
         </button>
       </div>
 
       {error && <p className="text-red-600 text-sm">{error}</p>}
 
-      {showForm && (
-        <div className="bg-white rounded-2xl shadow p-6 space-y-4 border border-blue-100">
-          <h4 className="font-semibold text-gray-700 text-sm">New Reward Rule</h4>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Field label="Name" value={form.name} onChange={(v) => setF('name', v)} required />
-            <Select label="Rule Type" value={form.ruleType} onChange={(v) => setF('ruleType', v)} options={RULE_TYPE_OPTIONS} required />
-            <Field label="Rate" value={String(form.rate)} onChange={(v) => setF('rate', Number(v))} type="number" required placeholder="1" />
-            <Select label="Rate Type" value={form.rateType} onChange={(v) => setF('rateType', v)} options={RATE_TYPE_OPTIONS} required />
-            <Field label="Priority" value={String(form.priority ?? 10)} onChange={(v) => setF('priority', Number(v))} type="number" />
-            <Field label="Cap / Month (pts)" value={String(form.capPerMonthPoints ?? '')} onChange={(v) => setF('capPerMonthPoints', Number(v))} type="number" />
-            <Field label="Cap / Year (pts)" value={String(form.capPerYearPoints ?? '')} onChange={(v) => setF('capPerYearPoints', Number(v))} type="number" />
-            <Field label="Valid From" value={form.validFrom ?? ''} onChange={(v) => setF('validFrom', v)} type="date" />
-            <Field label="Valid Until" value={form.validUntil ?? ''} onChange={(v) => setF('validUntil', v)} type="date" />
-          </div>
-          <div className="flex items-center gap-2">
-            <input type="checkbox" id="baseRate" checked={!!form.isBaseRate}
-              onChange={(e) => setF('isBaseRate', e.target.checked)} className="rounded border-gray-300" />
-            <label htmlFor="baseRate" className="text-sm text-gray-700">Base rate rule</label>
-          </div>
-          <Field label="Description" value={form.description ?? ''} onChange={(v) => setF('description', v)} as="textarea" />
-          <div className="flex justify-end gap-3">
-            <button onClick={() => setShowForm(false)} className="text-sm text-gray-500 hover:text-gray-700">Cancel</button>
-            <button onClick={handleAdd} disabled={saving}
-              className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700 disabled:opacity-50 transition-colors">
-              {saving ? 'Adding…' : 'Add Rule'}
-            </button>
-          </div>
-        </div>
+      {showAddForm && (
+        <RuleForm
+          title="New Reward Rule"
+          form={addForm}
+          setF={setAddF}
+          onSubmit={handleAdd}
+          onCancel={() => setShowAddForm(false)}
+          saving={saving}
+          submitLabel="Add Rule"
+        />
+      )}
+
+      {editingRule && (
+        <RuleForm
+          title={`Edit Rule — ${editingRule.name}`}
+          form={editForm}
+          setF={setEditF}
+          onSubmit={handleUpdate}
+          onCancel={() => setEditingRule(null)}
+          saving={saving}
+          submitLabel="Update Rule"
+        />
       )}
 
       {loading ? <p className="text-sm text-gray-400">Loading…</p> : (
@@ -306,10 +385,10 @@ function RewardRulesTab({ cardId }: { cardId: string }) {
           {rules.length === 0 ? (
             <p className="px-6 py-8 text-sm text-gray-400 text-center">No reward rules yet. Add the first one.</p>
           ) : (
-            <table className="w-full min-w-[540px]">
+            <table className="w-full min-w-[640px]">
               <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
-                  {['Name', 'Type', 'Rate', 'Rate Type', 'Priority', 'Base', 'Active'].map((h) => (
+                  {['Name', 'Type', 'Rate', 'Rate Type', 'Priority', 'Base', 'Status', 'Actions'].map((h) => (
                     <th key={h} className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">{h}</th>
                   ))}
                 </tr>
@@ -327,6 +406,20 @@ function RewardRulesTab({ cardId }: { cardId: string }) {
                       <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${r.isActive ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
                         {r.isActive ? 'Active' : 'Inactive'}
                       </span>
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-3">
+                        <button onClick={() => startEdit(r)}
+                          className="text-blue-500 hover:text-blue-700 text-sm">
+                          Edit
+                        </button>
+                        {r.isActive && (
+                          <button onClick={() => handleDeactivate(r.id, r.name)}
+                            className="text-red-400 hover:text-red-600 text-sm">
+                            Deactivate
+                          </button>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ))}
