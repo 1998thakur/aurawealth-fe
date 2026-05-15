@@ -194,12 +194,12 @@ export const adminCardsApi = {
   },
 
   updateRewardRule: async (ruleId: string, req: CreateRewardRuleRequest): Promise<AdminRewardRule> => {
-    const res = await adminClient.put<AdminRewardRule>(`/admin/v1/reward-rules/${ruleId}`, req);
+    const res = await adminClient.put<AdminRewardRule>(`/admin/v1/cards/reward-rules/${ruleId}`, req);
     return res.data;
   },
 
   deactivateRewardRule: async (ruleId: string): Promise<void> => {
-    await adminClient.delete(`/admin/v1/reward-rules/${ruleId}`);
+    await adminClient.delete(`/admin/v1/cards/reward-rules/${ruleId}`);
   },
 
   // Benefits
