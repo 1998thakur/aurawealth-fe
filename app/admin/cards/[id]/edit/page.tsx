@@ -300,7 +300,7 @@ function RewardRulesTab({ cardId }: { cardId: string }) {
   function startEdit(rule: AdminRewardRule) {
     setEditForm({
       name: rule.name,
-      description: rule.description ?? '',
+      description: rule.description || undefined,
       ruleType: rule.ruleType,
       rate: rule.rate,
       rateType: rule.rateType,
@@ -308,8 +308,8 @@ function RewardRulesTab({ cardId }: { cardId: string }) {
       isBaseRate: rule.isBaseRate,
       capPerMonthPoints: rule.capPerMonthPoints,
       capPerYearPoints: rule.capPerYearPoints,
-      validFrom: rule.validFrom ?? '',
-      validUntil: rule.validUntil ?? '',
+      validFrom: rule.validFrom || undefined,
+      validUntil: rule.validUntil || undefined,
     });
     setEditingRule(rule);
     setShowAddForm(false);
@@ -329,7 +329,13 @@ function RewardRulesTab({ cardId }: { cardId: string }) {
     if (!editingRule) return;
     setSaving(true); setError('');
     try {
-      const updated = await adminCardsApi.updateRewardRule(editingRule.id, editForm);
+      const payload: CreateRewardRuleRequest = {
+        ...editForm,
+        description: editForm.description || undefined,
+        validFrom: editForm.validFrom || undefined,
+        validUntil: editForm.validUntil || undefined,
+      };
+      const updated = await adminCardsApi.updateRewardRule(editingRule.id, payload);
       setRules((prev) => prev.map((r) => r.id === updated.id ? updated : r));
       setEditingRule(null);
     } catch { setError('Failed to update rule'); }
