@@ -205,7 +205,7 @@ export const adminCardsApi = {
   },
 
   deleteBenefit: async (benefitId: string): Promise<void> => {
-    await adminClient.delete(`/admin/v1/benefits/${benefitId}`);
+    await adminClient.delete(`/admin/v1/cards/benefits/${benefitId}`);
   },
 
   // Milestones
