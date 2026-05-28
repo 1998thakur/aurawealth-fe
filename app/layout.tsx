@@ -13,6 +13,9 @@ export const metadata: Metadata = {
   keywords:
     'best credit card India, credit card rewards, credit card comparison, airport lounge access, cashback credit card, travel credit card India, reward points credit card',
   authors: [{ name: 'CreditBrain' }],
+  alternates: {
+    canonical: '/',
+  },
   openGraph: {
     siteName: 'CreditBrain',
     locale: 'en_IN',

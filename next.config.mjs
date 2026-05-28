@@ -14,10 +14,7 @@ const nextConfig = {
         source: '/admin/v1/:path*',
         destination: `${BACKEND_URL}/admin/v1/:path*`,
       },
-      {
-        source: '/sitemap.xml',
-        destination: `${BACKEND_URL}/sitemap.xml`,
-      },
+      // /sitemap.xml is handled by app/sitemap.ts (Next.js built-in)
     ];
   },
 };

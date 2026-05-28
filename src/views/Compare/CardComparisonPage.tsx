@@ -527,13 +527,23 @@ export default function CardComparisonPage() {
                     >
                       View Details
                     </Link>
-                    <a
-                      href="#apply"
-                      onClick={(e) => e.preventDefault()}
-                      className="btn-primary text-sm py-2 text-center"
-                    >
-                      Apply Now
-                    </a>
+                    {card.applyUrl ? (
+                      <a
+                        href={card.applyUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="btn-primary text-sm py-2 text-center"
+                      >
+                        Apply Now
+                      </a>
+                    ) : (
+                      <Link
+                        href={`/cards/${card.id}`}
+                        className="btn-primary text-sm py-2 text-center"
+                      >
+                        View Details
+                      </Link>
+                    )}
                   </div>
                 ))}
               </div>
