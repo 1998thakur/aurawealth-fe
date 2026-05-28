@@ -209,7 +209,7 @@ export default function CardCatalogPage() {
         {/* Header */}
         <div className="mb-6">
           <h1 className="font-headline font-bold text-3xl text-on-surface mb-2">
-            Credit Card Catalog
+            Best Credit Cards in India 2026
           </h1>
           <p className="font-body text-on-surface-variant mb-4">
             Browse and compare {data?.total ?? '75+'} credit cards across all major issuers.
@@ -237,6 +237,44 @@ export default function CardCatalogPage() {
               </button>
             )}
           </div>
+        </div>
+
+        {/* Editorial intro — server-rendered, targets "best credit cards India 2026" */}
+        <div className="mb-8 max-w-3xl prose prose-sm font-body text-on-surface-variant leading-relaxed">
+          <p>
+            Choosing the right credit card can mean earning{' '}
+            <strong className="text-on-surface">₹50,000 or more in rewards every year</strong> — but
+            only if the card matches how you actually spend. India&apos;s credit card market now spans
+            entry-level lifetime-free cards all the way to ultra-premium metal cards with unlimited
+            lounge access and dedicated concierge. The difference between the best card for you and
+            the wrong one can be thousands of rupees annually.
+          </p>
+          <p className="mt-3">
+            CreditBrain tracks <strong className="text-on-surface">75+ cards</strong> from every
+            major issuer — HDFC, SBI, Axis, ICICI, Amex, Kotak, and more. Each card is evaluated on
+            its true effective reward rate after accounting for annual fees, spend thresholds, and
+            capping limits that banks rarely advertise upfront. You can filter by card tier (Entry to
+            Super Premium), reward type (Cashback, Points, or Miles), maximum annual fee, and lounge
+            access to narrow down to cards that fit your lifestyle.
+          </p>
+          <p className="mt-3">
+            <strong className="text-on-surface">Cashback cards</strong> like the HDFC Millennia and
+            Axis Ace are ideal for online shoppers who prefer straightforward savings. If you fly
+            frequently,{' '}
+            <strong className="text-on-surface">travel cards</strong> like the Amex Platinum Travel
+            or SBI BPCL Octane offer accelerated Miles and lounge perks. For maximizing rewards on
+            everyday spends, <strong className="text-on-surface">points cards</strong> from HDFC
+            (Regalia, Infinia) consistently deliver the highest effective rates.
+          </p>
+          <p className="mt-3">
+            Use the filters below to shortlist cards, then open any card for a full breakdown of
+            rewards, benefits, fees, and a side-by-side comparison tool. Already know your monthly
+            spend? Try the{' '}
+            <a href="/simulator" className="text-primary hover:underline font-medium">
+              Rewards Simulator
+            </a>{' '}
+            to see exact annual earnings across every card in our database.
+          </p>
         </div>
 
         <div className="flex flex-col lg:flex-row gap-6">

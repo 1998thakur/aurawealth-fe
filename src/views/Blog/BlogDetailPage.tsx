@@ -131,12 +131,13 @@ export default function BlogDetailPage() {
     const wordCount = post.content.replace(/<[^>]+>/g, ' ').trim().split(/\s+/).length;
     injectJsonLd('article', {
       '@context': 'https://schema.org',
-      '@type': 'Article',
+      '@type': 'BlogPosting',
       headline: post.title,
       description: post.excerpt,
-      image: post.coverImageUrl || undefined,
+      image: post.coverImageUrl || `${SITE_URL}/og-image.png`,
       keywords: post.keywords || post.tags?.join(', '),
       articleSection: post.category,
+      inLanguage: 'en-IN',
       wordCount,
       author: {
         '@type': 'Person',
@@ -148,7 +149,9 @@ export default function BlogDetailPage() {
         url: `${SITE_URL}`,
         logo: {
           '@type': 'ImageObject',
-          url: `${SITE_URL}/logo.png`,
+          url: `${SITE_URL}/og-image.png`,
+          width: 1200,
+          height: 630,
         },
       },
       datePublished: post.publishedAt,

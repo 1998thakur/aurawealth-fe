@@ -8,16 +8,16 @@ export default function robots(): MetadataRoute.Robots {
       // Standard crawlers — allow public content, block private routes
       {
         userAgent: '*',
-        allow: ['/', '/cards/', '/cards', '/blog/', '/blog', '/compare', '/simulator', '/expense-profiler'],
-        disallow: ['/dashboard', '/dashboard/', '/settings', '/settings/', '/auth', '/auth/', '/api/', '/admin', '/admin/'],
+        allow: ['/', '/cards', '/blog', '/compare', '/simulator', '/expense-profiler'],
+        disallow: ['/dashboard', '/settings', '/auth', '/api/', '/admin'],
       },
       // AI crawler explicit allowlist — same rules, ensures they aren't blocked
       {
         userAgent: ['GPTBot', 'ChatGPT-User', 'ClaudeBot', 'anthropic-ai', 'PerplexityBot', 'Googlebot-Image', 'CCBot', 'cohere-ai'],
-        allow: ['/', '/cards/', '/blog/', '/compare', '/simulator', '/expense-profiler'],
+        allow: ['/', '/cards', '/blog', '/compare', '/simulator', '/expense-profiler'],
         disallow: ['/dashboard', '/settings', '/auth', '/api/', '/admin'],
       },
     ],
-    sitemap: `${SITE_URL}/sitemap.xml`,
+    sitemap: [`${SITE_URL}/sitemap.xml`, `${SITE_URL}/image-sitemap.xml`],
   };
 }

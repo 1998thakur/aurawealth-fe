@@ -10,7 +10,7 @@ import CardGradient from '../../components/CardGradient';
 import { cardsApi } from '../../api/cards';
 import { formatInr } from '../../utils/format';
 import type { CardDetail, CardTier } from '../../types/cards';
-import { useSeoMeta } from '../../hooks/useSeoMeta';
+import { useSeoMeta, injectJsonLd, removeJsonLd } from '../../hooks/useSeoMeta';
 import { SITE_URL } from '../../config';
 
 const TIER_BADGES: Record<CardTier, string> = {
@@ -253,6 +253,31 @@ export default function CardComparisonPage() {
     canonical: `${SITE_URL}/compare`,
     ogUrl: `${SITE_URL}/compare`,
   });
+
+  useEffect(() => {
+    injectJsonLd('compare-app', {
+      '@context': 'https://schema.org',
+      '@type': 'WebApplication',
+      name: 'CreditBrain Card Comparison Tool',
+      applicationCategory: 'FinanceApplication',
+      operatingSystem: 'Web',
+      description: 'Compare up to 3 Indian credit cards side-by-side on rewards, annual fees, lounge access, and net annual value.',
+      offers: { '@type': 'Offer', price: 0, priceCurrency: 'INR' },
+      url: `${SITE_URL}/compare`,
+    });
+    injectJsonLd('breadcrumb-compare', {
+      '@context': 'https://schema.org',
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: 'Home', item: `${SITE_URL}/` },
+        { '@type': 'ListItem', position: 2, name: 'Compare Cards', item: `${SITE_URL}/compare` },
+      ],
+    });
+    return () => {
+      removeJsonLd('compare-app');
+      removeJsonLd('breadcrumb-compare');
+    };
+  }, []);
 
   const searchParams = useSearchParams();
   const router = useRouter();

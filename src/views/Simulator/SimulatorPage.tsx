@@ -382,7 +382,7 @@ export default function SimulatorPage() {
       applicationCategory: 'FinanceApplication',
       operatingSystem: 'Web',
       description: 'Free tool to calculate and compare credit card reward earnings for Indian cards.',
-      offers: { '@type': 'Offer', price: '0', priceCurrency: 'INR' },
+      offers: { '@type': 'Offer', price: 0, priceCurrency: 'INR' },
       url: `${SITE_URL}/simulator`,
     });
     return () => removeJsonLd('simulator-app');

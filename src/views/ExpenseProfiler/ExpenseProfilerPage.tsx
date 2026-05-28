@@ -11,6 +11,8 @@ import { expenseApi } from '../../api/expense';
 import { recommendationsApi } from '../../api/recommendations';
 import { useProfile } from '../../store/profileStore';
 import type { TravelFrequency } from '../../types/expense';
+import { injectJsonLd, removeJsonLd } from '../../hooks/useSeoMeta';
+import { SITE_URL } from '../../config';
 
 const STEP_LABELS = ['Monthly Spending', 'Travel & Preferences', 'Your Profile'];
 
@@ -124,6 +126,31 @@ export default function ExpenseProfilerPage() {
     queryKey: ['categories'],
     queryFn: cardsApi.getCategories,
   });
+
+  useEffect(() => {
+    injectJsonLd('expense-profiler-app', {
+      '@context': 'https://schema.org',
+      '@type': 'WebApplication',
+      name: 'CreditBrain Expense Profiler',
+      applicationCategory: 'FinanceApplication',
+      operatingSystem: 'Web',
+      description: 'Profile your monthly spending across categories to get personalised credit card recommendations that maximise your rewards.',
+      offers: { '@type': 'Offer', price: 0, priceCurrency: 'INR' },
+      url: `${SITE_URL}/expense-profiler`,
+    });
+    injectJsonLd('breadcrumb-expense-profiler', {
+      '@context': 'https://schema.org',
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: 'Home', item: `${SITE_URL}/` },
+        { '@type': 'ListItem', position: 2, name: 'Expense Profiler', item: `${SITE_URL}/expense-profiler` },
+      ],
+    });
+    return () => {
+      removeJsonLd('expense-profiler-app');
+      removeJsonLd('breadcrumb-expense-profiler');
+    };
+  }, []);
 
   // Load existing profile items when editing an existing profile
   const { data: existingProfile } = useQuery({

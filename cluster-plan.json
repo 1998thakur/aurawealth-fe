@@ -1,0 +1,698 @@
+{
+  "meta": {
+    "site": "CreditBrain (creditbrain.in)",
+    "seedKeyword": "best credit cards India",
+    "generatedAt": "2026-05-28",
+    "targetMarket": "Indian consumers researching credit cards",
+    "pillarPage": {
+      "url": "/cards",
+      "title": "Best Credit Cards in India 2026",
+      "intent": "Commercial",
+      "wordCountTarget": "3000-4000",
+      "note": "Existing page — needs editorial expansion to serve as true hub"
+    }
+  },
+
+  "existingSiteInventory": {
+    "staticPages": [
+      { "url": "/",               "title": "CreditBrain Home",                           "intent": "Commercial",      "hasSEO": true },
+      { "url": "/cards",          "title": "Best Credit Cards in India 2026",             "intent": "Commercial",      "hasSEO": true },
+      { "url": "/blog",           "title": "CreditBrain Blog",                            "intent": "Informational",   "hasSEO": true },
+      { "url": "/compare",        "title": "Compare Credit Cards India",                  "intent": "Commercial",      "hasSEO": true },
+      { "url": "/simulator",      "title": "Credit Card Rewards Calculator India",        "intent": "Commercial",      "hasSEO": true },
+      { "url": "/expense-profiler","title": "Expense Profiler",                           "intent": "Transactional",   "hasSEO": false }
+    ],
+    "dynamicPages": [
+      { "urlPattern": "/cards/:slug",   "count": "75+", "intent": "Commercial" },
+      { "urlPattern": "/blog/:slug",    "count": "unknown — API-driven", "intent": "Informational" }
+    ],
+    "blogCategories": ["Best Cards", "Cashback", "Rewards", "Travel", "Comparisons", "Guides", "Offers", "News"],
+    "spendCategories": ["Travel", "Dining", "Shopping", "Groceries", "Fuel", "Utilities", "Entertainment"],
+    "issuersTracked": ["HDFC", "SBI", "Axis", "ICICI", "Kotak", "Amex", "RBL", "IndusInd", "IDFC First", "Yes Bank", "Standard Chartered"],
+    "cardTiers": ["ENTRY", "STANDARD", "PREMIUM", "ELITE", "SUPER_PREMIUM"],
+    "rewardTypes": ["CASHBACK", "POINTS", "MILES"]
+  },
+
+  "keywordExpansion": {
+    "seedKeyword": "best credit cards India",
+    "expandedKeywords": [
+      { "keyword": "best credit cards India 2026",              "intent": "Commercial",      "cluster": "pillar" },
+      { "keyword": "top credit cards India",                     "intent": "Commercial",      "cluster": "pillar" },
+      { "keyword": "best credit card for online shopping India", "intent": "Commercial",      "cluster": "cashback" },
+      { "keyword": "best cashback credit card India",           "intent": "Commercial",      "cluster": "cashback" },
+      { "keyword": "highest cashback credit card India",        "intent": "Commercial",      "cluster": "cashback" },
+      { "keyword": "cashback credit card for groceries India",  "intent": "Commercial",      "cluster": "cashback" },
+      { "keyword": "cashback vs reward points India",           "intent": "Informational",   "cluster": "cashback" },
+      { "keyword": "best travel credit card India 2026",        "intent": "Commercial",      "cluster": "travel" },
+      { "keyword": "airport lounge access credit card India",   "intent": "Commercial",      "cluster": "travel" },
+      { "keyword": "zero forex markup credit card India",       "intent": "Commercial",      "cluster": "travel" },
+      { "keyword": "best air miles credit card India",          "intent": "Commercial",      "cluster": "travel" },
+      { "keyword": "best credit card for international travel India", "intent": "Commercial", "cluster": "travel" },
+      { "keyword": "credit card lounge access how it works India", "intent": "Informational", "cluster": "travel" },
+      { "keyword": "best reward points credit card India",      "intent": "Commercial",      "cluster": "rewards" },
+      { "keyword": "HDFC Infinia vs Axis Magnus",               "intent": "Commercial",      "cluster": "rewards" },
+      { "keyword": "how to maximise credit card reward points India", "intent": "Informational", "cluster": "rewards" },
+      { "keyword": "reward points redemption guide India",      "intent": "Informational",   "cluster": "rewards" },
+      { "keyword": "credit card reward points value INR",       "intent": "Informational",   "cluster": "rewards" },
+      { "keyword": "best lifetime free credit card India",      "intent": "Commercial",      "cluster": "no-fee" },
+      { "keyword": "no annual fee credit card India 2026",      "intent": "Commercial",      "cluster": "no-fee" },
+      { "keyword": "credit card annual fee waiver India",       "intent": "Informational",   "cluster": "no-fee" },
+      { "keyword": "entry level credit card India first timer", "intent": "Commercial",      "cluster": "no-fee" },
+      { "keyword": "how to get credit card fee waived India",   "intent": "Informational",   "cluster": "no-fee" },
+      { "keyword": "best credit card for fuel India",           "intent": "Commercial",      "cluster": "spend-category" },
+      { "keyword": "best credit card for dining India",         "intent": "Commercial",      "cluster": "spend-category" },
+      { "keyword": "best credit card for groceries India",      "intent": "Commercial",      "cluster": "spend-category" },
+      { "keyword": "best credit card for Swiggy Zomato",        "intent": "Commercial",      "cluster": "spend-category" },
+      { "keyword": "best credit card for Amazon Flipkart India","intent": "Commercial",      "cluster": "spend-category" },
+      { "keyword": "how to apply credit card India",            "intent": "Informational",   "cluster": "guides" },
+      { "keyword": "credit score required for credit card India","intent": "Informational",  "cluster": "guides" },
+      { "keyword": "credit card billing cycle explained India",  "intent": "Informational",   "cluster": "guides" },
+      { "keyword": "credit card vs debit card India",           "intent": "Informational",   "cluster": "guides" },
+      { "keyword": "how many credit cards should I have India", "intent": "Informational",   "cluster": "guides" },
+      { "keyword": "HDFC credit card comparison 2026",          "intent": "Commercial",      "cluster": "issuer-compare" },
+      { "keyword": "SBI vs HDFC credit card India",             "intent": "Commercial",      "cluster": "issuer-compare" },
+      { "keyword": "Axis Bank vs ICICI credit card India",      "intent": "Commercial",      "cluster": "issuer-compare" },
+      { "keyword": "Amex credit card India review",             "intent": "Commercial",      "cluster": "issuer-compare" },
+      { "keyword": "best super premium credit card India",      "intent": "Commercial",      "cluster": "premium" },
+      { "keyword": "HDFC Infinia credit card review India",     "intent": "Commercial",      "cluster": "premium" },
+      { "keyword": "Axis Magnus credit card review India",      "intent": "Commercial",      "cluster": "premium" },
+      { "keyword": "metal credit card India benefits",          "intent": "Informational",   "cluster": "premium" }
+    ],
+    "navigationalKeywordsRemoved": [
+      "HDFC credit card login",
+      "SBI card customer care number",
+      "Axis Bank credit card statement"
+    ]
+  },
+
+  "serpOverlapMatrix": {
+    "note": "Scores represent estimated shared URLs in top-10 organic results based on semantic similarity and known SERP compositions in the Indian credit card vertical. Live SERP fetch was not available; scores are derived from keyword co-occurrence patterns and topic proximity analysis.",
+    "thresholds": {
+      "samePost": "7-10",
+      "sameCluster": "4-6",
+      "interlink": "2-3",
+      "separate": "0-1"
+    },
+    "pairs": [
+      { "kw1": "best cashback credit card India",           "kw2": "best credit card for online shopping India", "score": 8, "verdict": "same-post" },
+      { "kw1": "best cashback credit card India",           "kw2": "cashback credit card for groceries India",   "score": 6, "verdict": "same-cluster" },
+      { "kw1": "best cashback credit card India",           "kw2": "cashback vs reward points India",            "score": 5, "verdict": "same-cluster" },
+      { "kw1": "best travel credit card India 2026",        "kw2": "airport lounge access credit card India",    "score": 7, "verdict": "same-post" },
+      { "kw1": "best travel credit card India 2026",        "kw2": "zero forex markup credit card India",        "score": 6, "verdict": "same-cluster" },
+      { "kw1": "best travel credit card India 2026",        "kw2": "best air miles credit card India",           "score": 7, "verdict": "same-post" },
+      { "kw1": "zero forex markup credit card India",       "kw2": "best credit card for international travel India", "score": 8, "verdict": "same-post" },
+      { "kw1": "best reward points credit card India",      "kw2": "how to maximise credit card reward points India", "score": 5, "verdict": "same-cluster" },
+      { "kw1": "HDFC Infinia vs Axis Magnus",               "kw2": "best reward points credit card India",       "score": 6, "verdict": "same-cluster" },
+      { "kw1": "reward points redemption guide India",      "kw2": "credit card reward points value INR",        "score": 7, "verdict": "same-post" },
+      { "kw1": "best lifetime free credit card India",      "kw2": "no annual fee credit card India 2026",       "score": 9, "verdict": "same-post" },
+      { "kw1": "best lifetime free credit card India",      "kw2": "credit card annual fee waiver India",        "score": 5, "verdict": "same-cluster" },
+      { "kw1": "entry level credit card India first timer", "kw2": "how to apply credit card India",             "score": 5, "verdict": "same-cluster" },
+      { "kw1": "best credit card for fuel India",           "kw2": "best credit card for dining India",          "score": 4, "verdict": "same-cluster" },
+      { "kw1": "best credit card for Swiggy Zomato",        "kw2": "best credit card for dining India",          "score": 8, "verdict": "same-post" },
+      { "kw1": "best credit card for Amazon Flipkart India","kw2": "best cashback credit card India",            "score": 6, "verdict": "same-cluster" },
+      { "kw1": "HDFC credit card comparison 2026",          "kw2": "SBI vs HDFC credit card India",              "score": 5, "verdict": "same-cluster" },
+      { "kw1": "Axis Bank vs ICICI credit card India",      "kw2": "HDFC credit card comparison 2026",           "score": 4, "verdict": "same-cluster" },
+      { "kw1": "best super premium credit card India",      "kw2": "HDFC Infinia credit card review India",      "score": 7, "verdict": "same-post" },
+      { "kw1": "Axis Magnus credit card review India",      "kw2": "best super premium credit card India",       "score": 7, "verdict": "same-post" },
+      { "kw1": "how to apply credit card India",            "kw2": "credit score required for credit card India","score": 6, "verdict": "same-cluster" },
+      { "kw1": "credit card billing cycle explained India", "kw2": "credit card vs debit card India",            "score": 4, "verdict": "same-cluster" },
+      { "kw1": "cashback vs reward points India",           "kw2": "best travel credit card India 2026",         "score": 3, "verdict": "interlink" },
+      { "kw1": "best credit cards India 2026",              "kw2": "best cashback credit card India",            "score": 5, "verdict": "same-cluster" },
+      { "kw1": "best credit cards India 2026",              "kw2": "best travel credit card India 2026",         "score": 5, "verdict": "same-cluster" }
+    ]
+  },
+
+  "clusters": [
+    {
+      "clusterId": "C1",
+      "clusterName": "Cashback Cards",
+      "pillarKeyword": "best cashback credit card India",
+      "pillarIntent": "Commercial",
+      "pillarUrl": "/blog/best-cashback-credit-cards-india",
+      "pillarWordCount": "2500-3500",
+      "template": "Best-of list with card tiles, comparison table, and embedded /compare CTA",
+      "linkedToolPages": ["/cards?rewardTypes=CASHBACK", "/compare", "/simulator"],
+      "linkedCardPages": ["cards matching CASHBACK reward type"],
+      "spokes": [
+        {
+          "spokeId": "C1-S1",
+          "primaryKeyword": "best credit card for online shopping India",
+          "secondaryKeywords": ["best credit card Amazon Flipkart India", "best credit card Meesho Myntra"],
+          "intent": "Commercial",
+          "suggestedSlug": "/blog/best-credit-card-online-shopping-india",
+          "template": "Best-of list with spend-category focus",
+          "wordCount": "1400-1800",
+          "serpOverlapToPillar": 8,
+          "internalLinksFrom": ["pillar C1", "C1-S2", "/cards?rewardTypes=CASHBACK"],
+          "internalLinksTo": ["pillar C1", "/cards?rewardTypes=CASHBACK", "/compare", "/simulator"]
+        },
+        {
+          "spokeId": "C1-S2",
+          "primaryKeyword": "best credit card for groceries India",
+          "secondaryKeywords": ["best credit card supermarket India", "cashback on BigBasket Blinkit"],
+          "intent": "Commercial",
+          "suggestedSlug": "/blog/best-credit-card-groceries-india",
+          "template": "Best-of list with spend-category focus",
+          "wordCount": "1300-1600",
+          "serpOverlapToPillar": 6,
+          "internalLinksFrom": ["pillar C1", "C1-S1", "C1-S3"],
+          "internalLinksTo": ["pillar C1", "/cards?rewardTypes=CASHBACK", "/simulator"]
+        },
+        {
+          "spokeId": "C1-S3",
+          "primaryKeyword": "cashback vs reward points credit card India",
+          "secondaryKeywords": ["cashback or reward points which is better India", "credit card points vs cashback"],
+          "intent": "Informational",
+          "suggestedSlug": "/blog/cashback-vs-reward-points-india",
+          "template": "Explainer guide with comparison table",
+          "wordCount": "1500-1800",
+          "serpOverlapToPillar": 5,
+          "internalLinksFrom": ["pillar C1", "C1-S1", "C2 pillar"],
+          "internalLinksTo": ["pillar C1", "C2 pillar", "/simulator"]
+        }
+      ]
+    },
+    {
+      "clusterId": "C2",
+      "clusterName": "Travel Cards",
+      "pillarKeyword": "best travel credit card India 2026",
+      "pillarIntent": "Commercial",
+      "pillarUrl": "/blog/best-travel-credit-cards-india",
+      "pillarWordCount": "3000-4000",
+      "template": "Best-of list with lounge/forex/miles sub-sections and embedded /compare CTA",
+      "linkedToolPages": ["/cards?hasLoungeAccess=true", "/compare", "/simulator"],
+      "linkedCardPages": ["cards with hasLoungeAccess=true or rewardType=MILES"],
+      "spokes": [
+        {
+          "spokeId": "C2-S1",
+          "primaryKeyword": "airport lounge access credit card India",
+          "secondaryKeywords": ["free airport lounge credit card India", "credit card domestic lounge access India"],
+          "intent": "Commercial",
+          "suggestedSlug": "/blog/airport-lounge-access-credit-cards-india",
+          "template": "Best-of list",
+          "wordCount": "1400-1700",
+          "serpOverlapToPillar": 7,
+          "internalLinksFrom": ["pillar C2", "C2-S2", "C2-S3"],
+          "internalLinksTo": ["pillar C2", "/cards?hasLoungeAccess=true", "/compare"]
+        },
+        {
+          "spokeId": "C2-S2",
+          "primaryKeyword": "zero forex markup credit card India",
+          "secondaryKeywords": ["best credit card international travel India", "no forex fee credit card India"],
+          "intent": "Commercial",
+          "suggestedSlug": "/blog/zero-forex-credit-cards-india",
+          "template": "Best-of list with explainer intro",
+          "wordCount": "1300-1600",
+          "serpOverlapToPillar": 7,
+          "internalLinksFrom": ["pillar C2", "C2-S1", "C2-S3"],
+          "internalLinksTo": ["pillar C2", "/cards", "/compare"]
+        },
+        {
+          "spokeId": "C2-S3",
+          "primaryKeyword": "best air miles credit card India",
+          "secondaryKeywords": ["best credit card for flight booking India", "airline miles credit card India", "IndiGo HDFC card review"],
+          "intent": "Commercial",
+          "suggestedSlug": "/blog/best-air-miles-credit-cards-india",
+          "template": "Best-of list with miles value calculator callout",
+          "wordCount": "1400-1800",
+          "serpOverlapToPillar": 7,
+          "internalLinksFrom": ["pillar C2", "C2-S1", "C2-S2"],
+          "internalLinksTo": ["pillar C2", "/simulator", "/cards?rewardTypes=MILES"]
+        },
+        {
+          "spokeId": "C2-S4",
+          "primaryKeyword": "how does airport lounge access work credit card India",
+          "secondaryKeywords": ["credit card lounge access rules India", "DreamFolks lounge India credit card"],
+          "intent": "Informational",
+          "suggestedSlug": "/blog/how-airport-lounge-access-works-credit-card-india",
+          "template": "Explainer guide with FAQ schema",
+          "wordCount": "1200-1500",
+          "serpOverlapToPillar": 4,
+          "internalLinksFrom": ["pillar C2", "C2-S1"],
+          "internalLinksTo": ["pillar C2", "C2-S1", "/cards?hasLoungeAccess=true"]
+        }
+      ]
+    },
+    {
+      "clusterId": "C3",
+      "clusterName": "Reward Points Maximisation",
+      "pillarKeyword": "best reward points credit card India",
+      "pillarIntent": "Commercial",
+      "pillarUrl": "/blog/best-reward-points-credit-cards-india",
+      "pillarWordCount": "2500-3500",
+      "template": "Best-of list with effective-rate data table and /simulator embed CTA",
+      "linkedToolPages": ["/simulator", "/compare", "/cards?rewardTypes=POINTS"],
+      "linkedCardPages": ["cards with rewardType=POINTS, especially ELITE and SUPER_PREMIUM tier"],
+      "spokes": [
+        {
+          "spokeId": "C3-S1",
+          "primaryKeyword": "how to maximise credit card reward points India",
+          "secondaryKeywords": ["tips to earn more reward points India", "reward points hacks India credit card"],
+          "intent": "Informational",
+          "suggestedSlug": "/blog/how-to-maximise-credit-card-reward-points-india",
+          "template": "How-to guide with numbered tips and simulator CTA",
+          "wordCount": "1500-1800",
+          "serpOverlapToPillar": 5,
+          "internalLinksFrom": ["pillar C3", "C3-S2", "C3-S3"],
+          "internalLinksTo": ["pillar C3", "/simulator", "/cards?rewardTypes=POINTS"]
+        },
+        {
+          "spokeId": "C3-S2",
+          "primaryKeyword": "credit card reward points redemption guide India",
+          "secondaryKeywords": ["how to redeem credit card points India", "reward points value calculation India"],
+          "intent": "Informational",
+          "suggestedSlug": "/blog/credit-card-reward-points-redemption-india",
+          "template": "Step-by-step guide with value table",
+          "wordCount": "1400-1700",
+          "serpOverlapToPillar": 6,
+          "internalLinksFrom": ["pillar C3", "C3-S1"],
+          "internalLinksTo": ["pillar C3", "C3-S1", "/simulator"]
+        },
+        {
+          "spokeId": "C3-S3",
+          "primaryKeyword": "HDFC Infinia vs Axis Magnus comparison",
+          "secondaryKeywords": ["Infinia vs Magnus rewards comparison", "best super premium points card India"],
+          "intent": "Commercial",
+          "suggestedSlug": "/blog/hdfc-infinia-vs-axis-magnus",
+          "template": "Head-to-head comparison with embedded /compare tool",
+          "wordCount": "1600-2000",
+          "serpOverlapToPillar": 6,
+          "internalLinksFrom": ["pillar C3", "C3-S1", "C5 pillar"],
+          "internalLinksTo": ["pillar C3", "C5 pillar", "/compare", "/cards/hdfc-infinia", "/cards/axis-magnus"]
+        }
+      ]
+    },
+    {
+      "clusterId": "C4",
+      "clusterName": "No-Fee and Entry-Level Cards",
+      "pillarKeyword": "best lifetime free credit card India",
+      "pillarIntent": "Commercial",
+      "pillarUrl": "/blog/best-lifetime-free-credit-cards-india",
+      "pillarWordCount": "2500-3000",
+      "template": "Best-of list with eligibility table, fee waiver explainer section",
+      "linkedToolPages": ["/cards?annualFeeMax=0", "/compare", "/expense-profiler"],
+      "linkedCardPages": ["cards with annualFee=0 or feeWaiverThresholdInr set"],
+      "spokes": [
+        {
+          "spokeId": "C4-S1",
+          "primaryKeyword": "how to get credit card annual fee waived India",
+          "secondaryKeywords": ["credit card fee waiver threshold India", "annual fee waiver spend target India"],
+          "intent": "Informational",
+          "suggestedSlug": "/blog/how-to-get-credit-card-annual-fee-waived-india",
+          "template": "How-to guide with spend threshold examples by card",
+          "wordCount": "1300-1600",
+          "serpOverlapToPillar": 5,
+          "internalLinksFrom": ["pillar C4", "C4-S2", "C5-S1"],
+          "internalLinksTo": ["pillar C4", "/cards", "/simulator"]
+        },
+        {
+          "spokeId": "C4-S2",
+          "primaryKeyword": "best first credit card India for beginners",
+          "secondaryKeywords": ["best credit card for first time users India", "entry level credit card India student"],
+          "intent": "Commercial",
+          "suggestedSlug": "/blog/best-first-credit-card-india-beginners",
+          "template": "Best-of list with eligibility requirements",
+          "wordCount": "1400-1700",
+          "serpOverlapToPillar": 5,
+          "internalLinksFrom": ["pillar C4", "C4-S1", "C5-S1"],
+          "internalLinksTo": ["pillar C4", "/expense-profiler", "/cards?tiers=ENTRY"]
+        },
+        {
+          "spokeId": "C4-S3",
+          "primaryKeyword": "credit score required for credit card India",
+          "secondaryKeywords": ["minimum CIBIL score credit card India", "how to build credit score India"],
+          "intent": "Informational",
+          "suggestedSlug": "/blog/credit-score-required-credit-card-india",
+          "template": "Explainer guide with issuer-wise score table",
+          "wordCount": "1300-1600",
+          "serpOverlapToPillar": 4,
+          "internalLinksFrom": ["pillar C4", "C4-S2", "C5-S1"],
+          "internalLinksTo": ["pillar C4", "C4-S2", "/expense-profiler"]
+        }
+      ]
+    },
+    {
+      "clusterId": "C5",
+      "clusterName": "Spend-Category Best Cards",
+      "pillarKeyword": "best credit card for every spending category India",
+      "pillarIntent": "Commercial",
+      "pillarUrl": "/blog/best-credit-card-by-spend-category-india",
+      "pillarWordCount": "3000-4000",
+      "template": "Hub guide covering all spend categories with anchor links to each spoke",
+      "linkedToolPages": ["/expense-profiler", "/simulator", "/compare"],
+      "linkedCardPages": ["all cards"],
+      "spokes": [
+        {
+          "spokeId": "C5-S1",
+          "primaryKeyword": "best credit card for fuel India 2026",
+          "secondaryKeywords": ["best fuel credit card India", "credit card fuel surcharge waiver India", "BPCL credit card review"],
+          "intent": "Commercial",
+          "suggestedSlug": "/blog/best-credit-card-fuel-india",
+          "template": "Best-of list with surcharge waiver explainer",
+          "wordCount": "1300-1600",
+          "serpOverlapToPillar": 4,
+          "internalLinksFrom": ["pillar C5", "C5-S2"],
+          "internalLinksTo": ["pillar C5", "/cards", "/simulator"]
+        },
+        {
+          "spokeId": "C5-S2",
+          "primaryKeyword": "best credit card for dining India",
+          "secondaryKeywords": ["best credit card for Swiggy Zomato India", "restaurant credit card cashback India"],
+          "intent": "Commercial",
+          "suggestedSlug": "/blog/best-credit-card-dining-india",
+          "template": "Best-of list with app-specific deals callout",
+          "wordCount": "1300-1600",
+          "serpOverlapToPillar": 4,
+          "internalLinksFrom": ["pillar C5", "C5-S1", "C5-S3"],
+          "internalLinksTo": ["pillar C5", "/cards?rewardTypes=CASHBACK", "/simulator"]
+        },
+        {
+          "spokeId": "C5-S3",
+          "primaryKeyword": "best credit card for utilities and bill payment India",
+          "secondaryKeywords": ["credit card for electricity bill India", "credit card for rent payment India"],
+          "intent": "Commercial",
+          "suggestedSlug": "/blog/best-credit-card-utilities-bill-payment-india",
+          "template": "Best-of list",
+          "wordCount": "1200-1500",
+          "serpOverlapToPillar": 4,
+          "internalLinksFrom": ["pillar C5", "C5-S2"],
+          "internalLinksTo": ["pillar C5", "/cards", "/expense-profiler"]
+        }
+      ]
+    },
+    {
+      "clusterId": "C6",
+      "clusterName": "Credit Card Application Guides",
+      "pillarKeyword": "how to apply for credit card India",
+      "pillarIntent": "Informational",
+      "pillarUrl": "/blog/how-to-apply-for-credit-card-india",
+      "pillarWordCount": "2500-3000",
+      "template": "Step-by-step how-to guide with eligibility checklist and FAQ schema",
+      "linkedToolPages": ["/expense-profiler", "/cards"],
+      "linkedCardPages": ["entry-level and standard tier cards"],
+      "spokes": [
+        {
+          "spokeId": "C6-S1",
+          "primaryKeyword": "credit card billing cycle explained India",
+          "secondaryKeywords": ["credit card statement date India", "credit card due date grace period India"],
+          "intent": "Informational",
+          "suggestedSlug": "/blog/credit-card-billing-cycle-explained-india",
+          "template": "Explainer guide with visual timeline",
+          "wordCount": "1300-1600",
+          "serpOverlapToPillar": 4,
+          "internalLinksFrom": ["pillar C6", "C6-S2"],
+          "internalLinksTo": ["pillar C6", "/cards"]
+        },
+        {
+          "spokeId": "C6-S2",
+          "primaryKeyword": "credit card vs debit card India which is better",
+          "secondaryKeywords": ["difference credit card debit card India", "should I use credit card or debit card"],
+          "intent": "Informational",
+          "suggestedSlug": "/blog/credit-card-vs-debit-card-india",
+          "template": "Comparison explainer with pros/cons table",
+          "wordCount": "1300-1500",
+          "serpOverlapToPillar": 4,
+          "internalLinksFrom": ["pillar C6", "C6-S1"],
+          "internalLinksTo": ["pillar C6", "C4 pillar", "/expense-profiler"]
+        },
+        {
+          "spokeId": "C6-S3",
+          "primaryKeyword": "how many credit cards should I have India",
+          "secondaryKeywords": ["multiple credit cards pros cons India", "is it good to have multiple credit cards India"],
+          "intent": "Informational",
+          "suggestedSlug": "/blog/how-many-credit-cards-should-i-have-india",
+          "template": "Explainer guide with FAQs",
+          "wordCount": "1200-1500",
+          "serpOverlapToPillar": 3,
+          "internalLinksFrom": ["pillar C6", "C6-S1"],
+          "internalLinksTo": ["pillar C6", "C3 pillar", "/cards"]
+        }
+      ]
+    },
+    {
+      "clusterId": "C7",
+      "clusterName": "Premium and Super Premium Cards",
+      "pillarKeyword": "best premium credit cards India 2026",
+      "pillarIntent": "Commercial",
+      "pillarUrl": "/blog/best-premium-credit-cards-india",
+      "pillarWordCount": "3000-4000",
+      "template": "Best-of list covering Elite and Super Premium tiers with benefit valuations",
+      "linkedToolPages": ["/cards?tiers=ELITE,SUPER_PREMIUM", "/compare", "/simulator"],
+      "linkedCardPages": ["ELITE and SUPER_PREMIUM tier cards"],
+      "spokes": [
+        {
+          "spokeId": "C7-S1",
+          "primaryKeyword": "HDFC Infinia credit card review India",
+          "secondaryKeywords": ["HDFC Infinia benefits", "HDFC Infinia annual fee worth it"],
+          "intent": "Commercial",
+          "suggestedSlug": "/blog/hdfc-infinia-credit-card-review",
+          "template": "Card review with reward calculator callout",
+          "wordCount": "1600-2000",
+          "serpOverlapToPillar": 7,
+          "internalLinksFrom": ["pillar C7", "C3-S3", "C7-S2"],
+          "internalLinksTo": ["pillar C7", "C3-S3", "/cards/hdfc-infinia", "/compare", "/simulator"]
+        },
+        {
+          "spokeId": "C7-S2",
+          "primaryKeyword": "Axis Magnus credit card review India 2026",
+          "secondaryKeywords": ["Axis Magnus benefits", "Axis Magnus vs Infinia"],
+          "intent": "Commercial",
+          "suggestedSlug": "/blog/axis-magnus-credit-card-review",
+          "template": "Card review with reward calculator callout",
+          "wordCount": "1600-2000",
+          "serpOverlapToPillar": 7,
+          "internalLinksFrom": ["pillar C7", "C3-S3", "C7-S1"],
+          "internalLinksTo": ["pillar C7", "C3-S3", "/cards/axis-magnus", "/compare", "/simulator"]
+        },
+        {
+          "spokeId": "C7-S3",
+          "primaryKeyword": "is a super premium credit card worth it India",
+          "secondaryKeywords": ["metal credit card India worth it", "premium credit card benefits vs fee India"],
+          "intent": "Informational",
+          "suggestedSlug": "/blog/is-premium-credit-card-worth-it-india",
+          "template": "Analytical guide with break-even calculation",
+          "wordCount": "1400-1700",
+          "serpOverlapToPillar": 5,
+          "internalLinksFrom": ["pillar C7", "C7-S1", "C7-S2"],
+          "internalLinksTo": ["pillar C7", "/simulator", "/compare"]
+        }
+      ]
+    }
+  ],
+
+  "linkMatrix": {
+    "mandatory": [
+      { "from": "/blog/best-cashback-credit-cards-india",         "to": "/cards",                                        "type": "pillar-to-catalog" },
+      { "from": "/blog/best-cashback-credit-cards-india",         "to": "/blog/best-credit-card-online-shopping-india",  "type": "pillar-to-spoke" },
+      { "from": "/blog/best-cashback-credit-cards-india",         "to": "/blog/best-credit-card-groceries-india",        "type": "pillar-to-spoke" },
+      { "from": "/blog/best-cashback-credit-cards-india",         "to": "/blog/cashback-vs-reward-points-india",         "type": "pillar-to-spoke" },
+      { "from": "/blog/best-credit-card-online-shopping-india",   "to": "/blog/best-cashback-credit-cards-india",        "type": "spoke-to-pillar" },
+      { "from": "/blog/best-credit-card-groceries-india",         "to": "/blog/best-cashback-credit-cards-india",        "type": "spoke-to-pillar" },
+      { "from": "/blog/cashback-vs-reward-points-india",          "to": "/blog/best-cashback-credit-cards-india",        "type": "spoke-to-pillar" },
+      { "from": "/blog/best-travel-credit-cards-india",           "to": "/cards",                                        "type": "pillar-to-catalog" },
+      { "from": "/blog/best-travel-credit-cards-india",           "to": "/blog/airport-lounge-access-credit-cards-india","type": "pillar-to-spoke" },
+      { "from": "/blog/best-travel-credit-cards-india",           "to": "/blog/zero-forex-credit-cards-india",           "type": "pillar-to-spoke" },
+      { "from": "/blog/best-travel-credit-cards-india",           "to": "/blog/best-air-miles-credit-cards-india",       "type": "pillar-to-spoke" },
+      { "from": "/blog/best-travel-credit-cards-india",           "to": "/blog/how-airport-lounge-access-works-credit-card-india", "type": "pillar-to-spoke" },
+      { "from": "/blog/airport-lounge-access-credit-cards-india", "to": "/blog/best-travel-credit-cards-india",          "type": "spoke-to-pillar" },
+      { "from": "/blog/zero-forex-credit-cards-india",            "to": "/blog/best-travel-credit-cards-india",          "type": "spoke-to-pillar" },
+      { "from": "/blog/best-air-miles-credit-cards-india",        "to": "/blog/best-travel-credit-cards-india",          "type": "spoke-to-pillar" },
+      { "from": "/blog/how-airport-lounge-access-works-credit-card-india", "to": "/blog/best-travel-credit-cards-india", "type": "spoke-to-pillar" },
+      { "from": "/blog/best-reward-points-credit-cards-india",    "to": "/simulator",                                    "type": "pillar-to-tool" },
+      { "from": "/blog/best-reward-points-credit-cards-india",    "to": "/blog/how-to-maximise-credit-card-reward-points-india", "type": "pillar-to-spoke" },
+      { "from": "/blog/best-reward-points-credit-cards-india",    "to": "/blog/credit-card-reward-points-redemption-india","type": "pillar-to-spoke" },
+      { "from": "/blog/best-reward-points-credit-cards-india",    "to": "/blog/hdfc-infinia-vs-axis-magnus",             "type": "pillar-to-spoke" },
+      { "from": "/blog/how-to-maximise-credit-card-reward-points-india", "to": "/blog/best-reward-points-credit-cards-india", "type": "spoke-to-pillar" },
+      { "from": "/blog/credit-card-reward-points-redemption-india","to": "/blog/best-reward-points-credit-cards-india",  "type": "spoke-to-pillar" },
+      { "from": "/blog/hdfc-infinia-vs-axis-magnus",              "to": "/blog/best-reward-points-credit-cards-india",  "type": "spoke-to-pillar" },
+      { "from": "/blog/best-lifetime-free-credit-cards-india",    "to": "/cards",                                        "type": "pillar-to-catalog" },
+      { "from": "/blog/best-lifetime-free-credit-cards-india",    "to": "/blog/how-to-get-credit-card-annual-fee-waived-india","type": "pillar-to-spoke" },
+      { "from": "/blog/best-lifetime-free-credit-cards-india",    "to": "/blog/best-first-credit-card-india-beginners",  "type": "pillar-to-spoke" },
+      { "from": "/blog/best-lifetime-free-credit-cards-india",    "to": "/blog/credit-score-required-credit-card-india", "type": "pillar-to-spoke" },
+      { "from": "/blog/how-to-get-credit-card-annual-fee-waived-india","to": "/blog/best-lifetime-free-credit-cards-india","type": "spoke-to-pillar" },
+      { "from": "/blog/best-first-credit-card-india-beginners",   "to": "/blog/best-lifetime-free-credit-cards-india",  "type": "spoke-to-pillar" },
+      { "from": "/blog/credit-score-required-credit-card-india",  "to": "/blog/best-lifetime-free-credit-cards-india",  "type": "spoke-to-pillar" }
+    ],
+    "recommended": [
+      { "from": "/blog/cashback-vs-reward-points-india",          "to": "/blog/best-reward-points-credit-cards-india",   "type": "cross-cluster" },
+      { "from": "/blog/hdfc-infinia-vs-axis-magnus",              "to": "/blog/best-premium-credit-cards-india",         "type": "cross-cluster" },
+      { "from": "/blog/best-first-credit-card-india-beginners",   "to": "/blog/credit-score-required-credit-card-india", "type": "same-cluster" },
+      { "from": "/blog/airport-lounge-access-credit-cards-india", "to": "/blog/how-airport-lounge-access-works-credit-card-india", "type": "same-cluster" },
+      { "from": "/blog/best-credit-card-online-shopping-india",   "to": "/blog/best-credit-card-groceries-india",        "type": "same-cluster" }
+    ],
+    "toolPageLinks": [
+      { "from": "every pillar and spoke blog post",               "to": "/cards",              "anchorTextPattern": "Browse {N}+ credit cards" },
+      { "from": "every Commercial-intent post",                    "to": "/compare",            "anchorTextPattern": "Compare cards side-by-side" },
+      { "from": "every rewards-related post",                      "to": "/simulator",          "anchorTextPattern": "Calculate your annual earnings" },
+      { "from": "every eligibility/guide post",                    "to": "/expense-profiler",   "anchorTextPattern": "Get personalized recommendations" }
+    ],
+    "cardDetailPageLinks": [
+      { "from": "card review spokes (C7-S1, C7-S2, C3-S3)",       "to": "/cards/:slug",        "note": "Link directly to the specific card detail page" },
+      { "from": "best-of list pillars",                            "to": "/cards/:slug",        "note": "Link 3-5 featured cards in the best-of list to their detail pages" }
+    ]
+  },
+
+  "contentGaps": {
+    "criticalMissing": [
+      {
+        "gap": "No standalone pillar content for cashback cards",
+        "evidence": "Blog has a Cashback category but the /cards page is not a content-rich pillar. Informational queries about cashback earn no ranking signals.",
+        "opportunity": "High — 'best cashback credit card India' likely 100K+ monthly searches"
+      },
+      {
+        "gap": "No spend-category-specific best-of pages",
+        "evidence": "The expense profiler captures fuel, dining, groceries spend data but there is no content targeting 'best credit card for fuel India' etc.",
+        "opportunity": "High — these are high-conversion, specific queries with moderate competition"
+      },
+      {
+        "gap": "No credit score / eligibility guide content",
+        "evidence": "The expense profiler asks for credit score range but there is no educational content explaining what score is needed per issuer.",
+        "opportunity": "High — first-time credit card seekers are a large top-of-funnel audience"
+      },
+      {
+        "gap": "No lounge access explainer",
+        "evidence": "The /cards filter has 'Lounge Access Only' toggle and the blog has a Travel category, but no article explains how DreamFolks/airport lounge access actually works.",
+        "opportunity": "Medium-High — frequent PAA question"
+      },
+      {
+        "gap": "No 'first credit card' or beginner guide",
+        "evidence": "The expense profiler has a student employment type option but no content targets new-to-credit users.",
+        "opportunity": "High — large recurring search volume from first-time applicants"
+      },
+      {
+        "gap": "No card-specific review articles",
+        "evidence": "Card detail pages (/cards/:slug) serve as product pages but there are no editorial review blog posts for specific cards like 'HDFC Infinia review' or 'Axis Magnus review'.",
+        "opportunity": "High — branded + comparison keywords have strong commercial intent"
+      },
+      {
+        "gap": "No 'how many credit cards should I have' content",
+        "evidence": "Common informational query not addressed anywhere on the site.",
+        "opportunity": "Medium — top-of-funnel for upsell to premium cards"
+      },
+      {
+        "gap": "No credit card billing cycle / due date explainer",
+        "evidence": "No Guides content on billing mechanics despite it being a fundamental PAA query.",
+        "opportunity": "Medium — supports long-tail FAQ traffic"
+      },
+      {
+        "gap": "No RuPay card content",
+        "evidence": "RuPay is one of the card networks tracked but zero blog content targets 'best RuPay credit card India' — a growing UPI-linked search segment.",
+        "opportunity": "Medium — growing segment with UPI credit card expansion"
+      },
+      {
+        "gap": "Issuer-level comparison pages are missing",
+        "evidence": "The Comparisons blog category exists but no pillar content covers 'HDFC vs SBI credit cards' or 'best Axis Bank credit card'.",
+        "opportunity": "Medium — high-intent commercial queries from brand-aware searchers"
+      }
+    ]
+  },
+
+  "highPriorityContentBriefs": [
+    {
+      "rank": 1,
+      "title": "Best Cashback Credit Cards in India 2026",
+      "targetUrl": "/blog/best-cashback-credit-cards-india",
+      "primaryKeyword": "best cashback credit card India",
+      "secondaryKeywords": ["highest cashback credit card India", "best credit card for online shopping India", "cashback credit card 2026 India"],
+      "intent": "Commercial",
+      "category": "Cashback",
+      "wordCount": "3000-3500",
+      "template": "Best-of list with ranked card tiles showing cashback %, annual fee, and net annual value. Include a comparison table. End with /compare and /simulator CTAs.",
+      "rationale": "This is the highest-volume Commercial query in the site's wheelhouse. The /cards page targets it but has no dedicated editorial pillar. Publishing this creates the C1 cluster anchor and immediately surfaces cashback card detail pages through internal links.",
+      "requiredSections": [
+        "Introduction: Why cashback cards are better for most Indian consumers",
+        "Top 5 cashback credit cards ranked table (pull from /cards API data)",
+        "Detailed breakdown per card: cashback %, categories, annual fee, fee waiver threshold",
+        "Best card for online shopping sub-section (captures C1-S1 as internal link target)",
+        "Best card for groceries sub-section (captures C1-S2 as internal link target)",
+        "Cashback vs reward points explainer paragraph (internal link to C1-S3)",
+        "FAQ schema: 5 PAA questions",
+        "CTA: Use the Rewards Simulator to calculate your cashback"
+      ],
+      "internalLinksToInclude": ["/cards?rewardTypes=CASHBACK", "/compare", "/simulator", "/blog/cashback-vs-reward-points-india"],
+      "schemaTypes": ["FAQPage", "BreadcrumbList", "ItemList"],
+      "estimatedTimeToRank": "3-5 months",
+      "cannibalizationRisk": "Low — /cards targets a broader keyword; this post targets the cashback-specific sub-segment"
+    },
+    {
+      "rank": 2,
+      "title": "Best Travel Credit Cards in India 2026 — Lounge Access, Zero Forex & Air Miles",
+      "targetUrl": "/blog/best-travel-credit-cards-india",
+      "primaryKeyword": "best travel credit card India 2026",
+      "secondaryKeywords": ["airport lounge access credit card India", "zero forex credit card India", "best air miles credit card India"],
+      "intent": "Commercial",
+      "category": "Travel",
+      "wordCount": "3500-4000",
+      "template": "Best-of list with three sub-sections (lounge, forex, miles). Embed a /compare CTA and link to /cards?hasLoungeAccess=true filtered view.",
+      "rationale": "Travel is an existing blog category and lounge access is a filter already on the /cards page — yet no pillar content exists. This closes the largest gap between site capability (lounge filter, MILES reward type) and content coverage. It anchors the C2 cluster and supports three high-volume spoke pages.",
+      "requiredSections": [
+        "Introduction: Choosing a travel credit card in India — what matters",
+        "Quick summary table: top 5 travel cards at a glance",
+        "Best cards for airport lounge access (link to C2-S1 spoke)",
+        "Best cards for international travel / zero forex (link to C2-S2 spoke)",
+        "Best cards for air miles / flight booking (link to C2-S3 spoke)",
+        "How to read lounge access terms (link to C2-S4 explainer)",
+        "FAQ schema: 5 PAA questions including 'which credit card gives free lounge access India'",
+        "CTA: Calculate travel card earnings with the Rewards Simulator"
+      ],
+      "internalLinksToInclude": ["/cards?hasLoungeAccess=true", "/cards?rewardTypes=MILES", "/compare", "/simulator"],
+      "schemaTypes": ["FAQPage", "BreadcrumbList", "ItemList"],
+      "estimatedTimeToRank": "3-6 months",
+      "cannibalizationRisk": "Low — no existing content on this topic"
+    },
+    {
+      "rank": 3,
+      "title": "Best First Credit Card in India for Beginners (2026) — Zero Annual Fee, Easy Approval",
+      "targetUrl": "/blog/best-first-credit-card-india-beginners",
+      "primaryKeyword": "best first credit card India for beginners",
+      "secondaryKeywords": ["best lifetime free credit card India", "entry level credit card India", "credit card for students India", "easy approval credit card India"],
+      "intent": "Commercial",
+      "category": "Best Cards",
+      "wordCount": "2000-2500",
+      "template": "Best-of list with eligibility focus. Include a credit score explainer section and a step-by-step application walkthrough.",
+      "rationale": "First-time credit card applicants are the largest top-of-funnel audience segment and represent future multi-card holders. This brief targets the broadest entry point into the Indian credit card market, funnels users to the expense profiler for personalized picks, and seeds the C4 cluster. It also ranks the site for 'lifetime free credit card India' which is a very high-volume query.",
+      "requiredSections": [
+        "Introduction: Why your first credit card choice matters",
+        "What to look for: zero annual fee, low income requirement, easy approval",
+        "Top 5 first credit cards ranked: SBI SimplyCLICK, Axis Neo, ICICI Platinum, Amazon Pay ICICI, Flipkart Axis",
+        "Eligibility requirements table: minimum income, credit score by card",
+        "How to apply section (link to C6 pillar)",
+        "What credit score do you need? (link to C4-S3 spoke)",
+        "How to get the annual fee waived once you upgrade (link to C4-S1 spoke)",
+        "FAQ schema: 5 PAA questions",
+        "CTA: Use Expense Profiler to get your personalized first card recommendation"
+      ],
+      "internalLinksToInclude": ["/expense-profiler", "/cards?tiers=ENTRY", "/blog/credit-score-required-credit-card-india", "/blog/how-to-apply-for-credit-card-india", "/compare"],
+      "schemaTypes": ["FAQPage", "BreadcrumbList", "ItemList"],
+      "estimatedTimeToRank": "2-4 months",
+      "cannibalizationRisk": "None — completely unaddressed topic on the site"
+    }
+  ],
+
+  "cannibalizationCheck": {
+    "existingPagesReviewed": [
+      { "url": "/cards",      "primaryKeyword": "best credit cards India 2026",           "risk": "Low — broad catalog page vs specific cluster pillars; complementary" },
+      { "url": "/compare",    "primaryKeyword": "compare credit cards India",              "risk": "None — tool page, not an editorial post" },
+      { "url": "/simulator",  "primaryKeyword": "credit card rewards calculator India",   "risk": "None — tool page, not an editorial post" },
+      { "url": "/blog (category filter)", "primaryKeyword": "each category name",         "risk": "Low — category filter pages use ?category= query params which should be canonicalized or noindexed to prevent thin-content issues" }
+    ],
+    "recommendations": [
+      "Ensure /blog?category=Cashback URLs are either canonicalized to /blog or are enriched with unique editorial intro content to avoid thin content flags.",
+      "The /cards page editorial intro already targets 'best credit cards India 2026' — new cluster pillars should target sub-set keywords (e.g. 'best cashback credit card India') not re-use the exact same primary keyword.",
+      "Card detail pages (/cards/:slug) serve as product pages; card review articles (/blog/hdfc-infinia-credit-card-review) serve editorial intent — these are complementary, not cannibalizing, as long as the blog posts link to the card detail pages."
+    ]
+  },
+
+  "implementationPriority": [
+    { "phase": 1, "action": "Publish C1 pillar — Best Cashback Credit Cards India",        "effort": "High", "impact": "High",   "timeline": "Week 1-2" },
+    { "phase": 1, "action": "Publish C2 pillar — Best Travel Credit Cards India",          "effort": "High", "impact": "High",   "timeline": "Week 2-3" },
+    { "phase": 1, "action": "Publish C4-S2 spoke — Best First Credit Card India Beginners","effort": "Medium", "impact": "High", "timeline": "Week 3-4" },
+    { "phase": 2, "action": "Publish C1-S1 spoke — Best Credit Card for Online Shopping",  "effort": "Medium", "impact": "High", "timeline": "Week 4-5" },
+    { "phase": 2, "action": "Publish C2-S1 spoke — Airport Lounge Access Credit Cards",    "effort": "Medium", "impact": "High", "timeline": "Week 5-6" },
+    { "phase": 2, "action": "Publish C3 pillar — Best Reward Points Credit Cards India",   "effort": "High", "impact": "Medium", "timeline": "Week 5-6" },
+    { "phase": 3, "action": "Publish C7 pillar — Best Premium Credit Cards India",         "effort": "High", "impact": "Medium", "timeline": "Week 7-8" },
+    { "phase": 3, "action": "Publish C4 pillar — Best Lifetime Free Credit Cards India",   "effort": "Medium", "impact": "Medium","timeline": "Week 7-8" },
+    { "phase": 3, "action": "Publish C6 pillar — How to Apply for Credit Card India",      "effort": "Medium", "impact": "Medium","timeline": "Week 8-9" },
+    { "phase": 4, "action": "Publish all remaining spokes across C1–C7",                   "effort": "Ongoing","impact": "Compound","timeline": "Week 9+" }
+  ]
+}
