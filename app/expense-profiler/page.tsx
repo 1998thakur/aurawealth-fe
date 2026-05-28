@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { Suspense } from 'react';
 import ExpenseProfilerPage from '../../src/views/ExpenseProfiler/ExpenseProfilerPage';
 
 export const metadata: Metadata = {
@@ -20,5 +21,9 @@ export const metadata: Metadata = {
 };
 
 export default function Page() {
-  return <ExpenseProfilerPage />;
+  return (
+    <Suspense>
+      <ExpenseProfilerPage />
+    </Suspense>
+  );
 }

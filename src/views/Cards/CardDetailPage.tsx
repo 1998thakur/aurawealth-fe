@@ -144,8 +144,8 @@ export default function CardDetailPage() {
       ? `${card.name}, ${card.issuer.name} credit card, ${card.name} review, ${card.name} rewards, ${card.name} benefits`
       : undefined,
     ogType: 'website',
-    canonical: card ? `${SITE_URL}/cards/${card.id}` : undefined,
-    ogUrl: card ? `${SITE_URL}/cards/${card.id}` : undefined,
+    canonical: card ? `${SITE_URL}/cards/${card.slug}` : undefined,
+    ogUrl: card ? `${SITE_URL}/cards/${card.slug}` : undefined,
     ogImage: card?.cardImageUrl ?? undefined,
   });
 
@@ -157,7 +157,7 @@ export default function CardDetailPage() {
       itemListElement: [
         { '@type': 'ListItem', position: 1, name: 'Home', item: `${SITE_URL}/` },
         { '@type': 'ListItem', position: 2, name: 'Credit Cards', item: `${SITE_URL}/cards` },
-        { '@type': 'ListItem', position: 3, name: card.name, item: `${SITE_URL}/cards/${card.id}` },
+        { '@type': 'ListItem', position: 3, name: card.name, item: `${SITE_URL}/cards/${card.slug}` },
       ],
     });
     injectJsonLd('card-product', {

@@ -522,7 +522,7 @@ export default function CardComparisonPage() {
                 {validCards.map((card: CardDetail) => (
                   <div key={card.id} className="flex flex-col gap-2">
                     <Link
-                      href={`/cards/${card.id}`}
+                      href={`/cards/${card.slug}`}
                       className="btn-outlined text-sm py-2 text-center"
                     >
                       View Details
@@ -538,7 +538,7 @@ export default function CardComparisonPage() {
                       </a>
                     ) : (
                       <Link
-                        href={`/cards/${card.id}`}
+                        href={`/cards/${card.slug}`}
                         className="btn-primary text-sm py-2 text-center"
                       >
                         View Details

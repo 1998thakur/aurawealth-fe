@@ -339,6 +339,26 @@ function ResultPanel({ card, result, spends, label }: ResultPanelProps) {
           </div>
         </div>
       )}
+
+      {/* CTA: Apply or view card details after seeing results */}
+      <div className="mt-5 flex flex-col gap-2">
+        {card.applyUrl ? (
+          <a
+            href={card.applyUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="btn-primary text-sm py-2.5 text-center"
+          >
+            Apply for {card.name}
+          </a>
+        ) : null}
+        <Link
+          href={`/cards/${card.slug}`}
+          className="btn-outlined text-sm py-2.5 text-center"
+        >
+          Full Review &amp; Benefits
+        </Link>
+      </div>
     </div>
   );
 }

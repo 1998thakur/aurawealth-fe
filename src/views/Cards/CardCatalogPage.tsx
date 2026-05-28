@@ -91,7 +91,7 @@ function CardCatalogItem({ card }: { card: CardSummary }) {
         </div>
 
         <Link
-          href={`/cards/${card.id}`}
+          href={`/cards/${card.slug}`}
           className="btn-outlined text-sm py-2 text-center mt-auto"
         >
           View Details
@@ -122,11 +122,11 @@ function SkeletonCard() {
 
 export default function CardCatalogPage() {
   useSeoMeta({
-    title: 'Best Credit Cards in India 2024 — Compare & Find Your Card',
+    title: 'Best Credit Cards in India 2026 — Compare & Find Your Card',
     description:
       'Browse and compare 75+ credit cards in India. Filter by tier, reward type, annual fee, and lounge access. Find the best cashback, travel, and reward points cards.',
     keywords:
-      'best credit cards India 2024, compare credit cards India, cashback credit cards, travel credit cards, no annual fee credit cards, lounge access credit cards, top credit cards India',
+      'best credit cards India 2026, compare credit cards India, cashback credit cards, travel credit cards, no annual fee credit cards, lounge access credit cards, top credit cards India',
     canonical: `${SITE_URL}/cards`,
     ogUrl: `${SITE_URL}/cards`,
   });

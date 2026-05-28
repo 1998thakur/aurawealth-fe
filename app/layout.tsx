@@ -26,9 +26,39 @@ export const metadata: Metadata = {
   robots: 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1',
 };
 
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://creditbrain.in';
+
+const organizationSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'Organization',
+  name: 'CreditBrain',
+  url: SITE_URL,
+  logo: {
+    '@type': 'ImageObject',
+    url: `${SITE_URL}/og-image.png`,
+    width: 1200,
+    height: 630,
+  },
+  description: "India's smartest credit card advisor — compare 75+ credit cards and find your best match.",
+  areaServed: { '@type': 'Country', name: 'India' },
+  sameAs: ['https://twitter.com/CreditBrain'],
+};
+
+const websiteSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  name: 'CreditBrain',
+  url: SITE_URL,
+  potentialAction: {
+    '@type': 'SearchAction',
+    target: `${SITE_URL}/cards?search={search_term_string}`,
+    'query-input': 'required name=search_term_string',
+  },
+};
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en-IN">
       <head>
         <meta name="theme-color" content="#003358" />
         <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
@@ -43,6 +73,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link
           href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
           rel="stylesheet"
+        />
+        {/* Server-rendered structured data — visible to Googlebot on first crawl */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }}
         />
       </head>
       <body>
