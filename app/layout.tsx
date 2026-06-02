@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { Inter, Manrope } from 'next/font/google';
+import Script from 'next/script';
 import './globals.css';
 import Providers from '../src/components/providers';
 
@@ -74,8 +75,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en-IN" className={`${inter.variable} ${manrope.variable}`}>
       <head>
         <meta name="theme-color" content="#003358" />
+        <link rel="icon" type="image/png" href="/favicon-96x96.png" sizes="96x96" />
         <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+        <link rel="shortcut icon" href="/favicon.ico" />
+        <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
         <link rel="manifest" href="/site.webmanifest" />
         {/* Material Symbols kept as external — variable axes unsupported by next/font */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -96,6 +99,19 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body>
         <Providers>{children}</Providers>
+        {/* Google Analytics — loads after page is interactive, never blocks render */}
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-WZ2BE0GHRC"
+          strategy="afterInteractive"
+        />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-WZ2BE0GHRC');
+          `}
+        </Script>
       </body>
     </html>
   );

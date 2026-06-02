@@ -72,7 +72,11 @@ async function fetchAllBlogPosts(): Promise<BlogSummary[]> {
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const [cards, posts] = await Promise.all([fetchAllCards(), fetchAllBlogPosts()]);
+  const [rawCards, rawPosts] = await Promise.all([fetchAllCards(), fetchAllBlogPosts()]);
+
+  // Deduplicate — backend pagination can return the same slug on multiple pages
+  const cards = Array.from(new Map(rawCards.map((c) => [c.slug, c])).values());
+  const posts = Array.from(new Map(rawPosts.map((p) => [p.slug, p])).values());
 
   const staticPages: MetadataRoute.Sitemap = [
     { url: `${SITE_URL}/`,               lastModified: new Date(), changeFrequency: 'weekly',  priority: 1.0 },

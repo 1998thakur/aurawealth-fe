@@ -52,7 +52,9 @@ function escapeXml(str: string): string {
 }
 
 export async function GET() {
-  const cards = await fetchAllCards();
+  const rawCards = await fetchAllCards();
+  // Deduplicate by slug — backend pagination may return the same card on multiple pages
+  const cards = Array.from(new Map(rawCards.map((c) => [c.slug, c])).values());
 
   const urlEntries = cards
     .filter((card) => card.cardImageUrl || card.cardImageThumbnailUrl)

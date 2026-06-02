@@ -5,9 +5,11 @@ export const metadata: Metadata = {
   title: 'Terms of Service — CreditBrain',
   description:
     'Read CreditBrain\'s Terms of Service to understand your rights and obligations when using our credit card comparison and recommendation platform.',
+  alternates: { canonical: '/terms' },
   openGraph: {
     title: 'Terms of Service — CreditBrain',
     description: 'Terms and conditions for using the CreditBrain platform.',
+    url: '/terms',
     type: 'website',
   },
 };

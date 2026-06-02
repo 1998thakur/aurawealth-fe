@@ -5,9 +5,11 @@ export const metadata: Metadata = {
   title: 'Privacy Policy — CreditBrain',
   description:
     'Read CreditBrain\'s Privacy Policy to understand how we collect, use, and protect your personal information.',
+  alternates: { canonical: '/privacy' },
   openGraph: {
     title: 'Privacy Policy — CreditBrain',
     description: 'How CreditBrain collects, uses, and protects your personal information.',
+    url: '/privacy',
     type: 'website',
   },
 };
