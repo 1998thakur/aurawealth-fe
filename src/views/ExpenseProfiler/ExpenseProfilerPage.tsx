@@ -34,16 +34,6 @@ interface ProfileData {
   preferredRewardType: 'CASHBACK' | 'POINTS' | 'MILES';
 }
 
-const DEFAULT_CATEGORIES = [
-  { id: 'shopping', name: 'Shopping', icon: 'shopping_bag' },
-  { id: 'travel', name: 'Travel', icon: 'flight' },
-  { id: 'dining', name: 'Dining', icon: 'restaurant' },
-  { id: 'groceries', name: 'Groceries', icon: 'local_grocery_store' },
-  { id: 'fuel', name: 'Fuel', icon: 'local_gas_station' },
-  { id: 'utilities', name: 'Utilities', icon: 'bolt' },
-  { id: 'entertainment', name: 'Entertainment', icon: 'movie' },
-];
-
 const INCOME_OPTIONS = [
   { value: 'BELOW_3L', label: 'Below ₹3 Lakh' },
   { value: '3L_6L', label: '₹3 – 6 Lakh' },
@@ -122,7 +112,7 @@ export default function ExpenseProfilerPage() {
   });
   const [error, setError] = useState('');
 
-  const { data: categories } = useQuery({
+  const { data: categories, isLoading: categoriesLoading } = useQuery({
     queryKey: ['categories'],
     queryFn: cardsApi.getCategories,
   });
@@ -171,8 +161,6 @@ export default function ExpenseProfilerPage() {
       setTravelData((prev) => ({ ...prev, loungeAccessPreferred: existingProfile.loungeAccessPreferred }));
     }
   }, [existingProfile]);
-
-  const displayCategories = categories?.length ? categories : DEFAULT_CATEGORIES;
 
   const createProfileMutation = useMutation({
     mutationFn: () => expenseApi.createProfile(),
@@ -289,19 +277,27 @@ export default function ExpenseProfilerPage() {
                 </div>
               )}
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {displayCategories.map((cat) => (
-                <SpendInput
-                  key={cat.id}
-                  label={'displayName' in cat ? (cat as { displayName: string }).displayName : cat.name}
-                  icon={cat.icon ?? 'category'}
-                  value={spendData[cat.id] ?? 0}
-                  onChange={(val) =>
-                    setSpendData((prev) => ({ ...prev, [cat.id]: val }))
-                  }
-                />
-              ))}
-            </div>
+            {categoriesLoading ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {[...Array(6)].map((_, i) => (
+                  <div key={i} className="skeleton h-14 rounded-xl" />
+                ))}
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {(categories ?? []).map((cat) => (
+                  <SpendInput
+                    key={cat.id}
+                    label={cat.displayName || cat.name}
+                    icon={cat.icon ?? 'category'}
+                    value={spendData[cat.id] ?? 0}
+                    onChange={(val) =>
+                      setSpendData((prev) => ({ ...prev, [cat.id]: val }))
+                    }
+                  />
+                ))}
+              </div>
+            )}
           </div>
         )}
 

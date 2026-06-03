@@ -10,24 +10,9 @@ import SpendInput from '../../components/SpendInput';
 import { cardsApi } from '../../api/cards';
 import { expenseApi } from '../../api/expense';
 import { formatInr, formatNumber } from '../../utils/format';
-import type { CardDetail, CardSummary, RewardRule } from '../../types/cards';
+import type { CardDetail, CardSummary, Category, RewardRule } from '../../types/cards';
 import { useSeoMeta, injectJsonLd, removeJsonLd } from '../../hooks/useSeoMeta';
 import { SITE_URL } from '../../config';
-
-interface SpendCategory {
-  id: string;
-  name: string;
-  icon: string;
-}
-
-const SPEND_CATEGORIES: SpendCategory[] = [
-  { id: 'travel', name: 'Travel', icon: 'flight' },
-  { id: 'dining', name: 'Dining', icon: 'restaurant' },
-  { id: 'shopping', name: 'Shopping', icon: 'shopping_bag' },
-  { id: 'groceries', name: 'Groceries', icon: 'local_grocery_store' },
-  { id: 'utilities', name: 'Utilities', icon: 'bolt' },
-  { id: 'entertainment', name: 'Entertainment', icon: 'movie' },
-];
 
 interface RewardsCalcResult {
   totalAnnualPoints: number;
@@ -46,14 +31,17 @@ interface RewardsCalcResult {
 
 function computeRewards(
   card: CardDetail,
-  spends: Record<string, number>
+  spends: Record<string, number>,
+  categories: Category[]
 ): RewardsCalcResult {
   const rules: RewardRule[] = card.rewardRules ?? [];
   const sortedRules = [...rules].sort((a, b) => b.priority - a.priority);
   let totalAnnualPoints = 0;
   const breakdown: RewardsCalcResult['breakdown'] = [];
 
-  for (const cat of SPEND_CATEGORIES) {
+  const sortedCategories = [...categories].sort((a, b) => a.sortOrder - b.sortOrder);
+
+  for (const cat of sortedCategories) {
     const monthly = spends[cat.id] ?? 0;
     if (monthly <= 0) continue;
     const annualSpend = monthly * 12;
@@ -86,7 +74,7 @@ function computeRewards(
     totalAnnualPoints += points;
     breakdown.push({
       categoryId: cat.id,
-      categoryName: cat.name,
+      categoryName: cat.displayName || cat.name,
       rateLabel,
       monthlySpend: monthly,
       annualPoints: Math.round(points),
@@ -393,6 +381,11 @@ export default function SimulatorPage() {
   const [showCompare, setShowCompare] = useState(false);
   const [spends, setSpends] = useState<Record<string, number>>({});
 
+  const { data: categories, isLoading: categoriesLoading } = useQuery({
+    queryKey: ['categories'],
+    queryFn: cardsApi.getCategories,
+  });
+
   // Pre-fill from active profile
   const { data: activeProfile } = useQuery({
     queryKey: ['expense-profiles', 'active'],
@@ -423,13 +416,13 @@ export default function SimulatorPage() {
   });
 
   const result1 = useMemo(
-    () => (card1 ? computeRewards(card1, spends) : null),
-    [card1, spends]
+    () => (card1 && categories ? computeRewards(card1, spends, categories) : null),
+    [card1, spends, categories]
   );
 
   const result2 = useMemo(
-    () => (card2 ? computeRewards(card2, spends) : null),
-    [card2, spends]
+    () => (card2 && categories ? computeRewards(card2, spends, categories) : null),
+    [card2, spends, categories]
   );
 
   const totalMonthly = Object.values(spends).reduce((a, b) => a + b, 0);
@@ -462,19 +455,27 @@ export default function SimulatorPage() {
                   </span>
                 )}
               </div>
-              <div className="space-y-4">
-                {SPEND_CATEGORIES.map((cat) => (
-                  <SpendInput
-                    key={cat.id}
-                    label={cat.name}
-                    icon={cat.icon}
-                    value={spends[cat.id] ?? 0}
-                    onChange={(val) =>
-                      setSpends((prev) => ({ ...prev, [cat.id]: val }))
-                    }
-                  />
-                ))}
-              </div>
+              {categoriesLoading ? (
+                <div className="space-y-4">
+                  {[...Array(6)].map((_, i) => (
+                    <div key={i} className="skeleton h-14 rounded-xl" />
+                  ))}
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {([...( categories ?? [])].sort((a, b) => a.sortOrder - b.sortOrder)).map((cat) => (
+                    <SpendInput
+                      key={cat.id}
+                      label={cat.displayName || cat.name}
+                      icon={cat.icon ?? 'category'}
+                      value={spends[cat.id] ?? 0}
+                      onChange={(val) =>
+                        setSpends((prev) => ({ ...prev, [cat.id]: val }))
+                      }
+                    />
+                  ))}
+                </div>
+              )}
 
               <div className="mt-4 pt-4 border-t border-outline-variant">
                 <p className="font-body text-xs text-on-surface-variant">

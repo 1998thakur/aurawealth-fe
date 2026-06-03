@@ -11,7 +11,7 @@ import SpendInput from '../../components/SpendInput';
 import { cardsApi } from '../../api/cards';
 import { expenseApi } from '../../api/expense';
 import { formatInr, formatNumber } from '../../utils/format';
-import type { CardTier, RewardRule } from '../../types/cards';
+import type { CardDetail, CardTier, Category, RewardRule } from '../../types/cards';
 import { useSeoMeta, injectJsonLd, removeJsonLd } from '../../hooks/useSeoMeta';
 import { SITE_URL } from '../../config';
 
@@ -25,23 +25,183 @@ const TIER_BADGES: Record<CardTier, string> = {
   SUPER_PREMIUM: 'tier-badge-super_premium',
 };
 
-const DEFAULT_CATEGORIES = [
-  { id: 'travel', name: 'Travel', icon: 'flight' },
-  { id: 'dining', name: 'Dining', icon: 'restaurant' },
-  { id: 'shopping', name: 'Shopping', icon: 'shopping_bag' },
-  { id: 'groceries', name: 'Groceries', icon: 'local_grocery_store' },
-  { id: 'utilities', name: 'Utilities', icon: 'bolt' },
-  { id: 'entertainment', name: 'Entertainment', icon: 'movie' },
-];
+const BENEFIT_ICONS: Record<string, string> = {
+  LOUNGE: 'airline_seat_recline_extra',
+  DINING: 'restaurant',
+  INSURANCE: 'shield',
+  FUEL: 'local_gas_station',
+  TRAVEL: 'flight',
+  SHOPPING: 'shopping_bag',
+  ENTERTAINMENT: 'movie',
+  GOLF: 'sports_golf',
+  WELLNESS: 'spa',
+  CONCIERGE: 'support_agent',
+  CASHBACK: 'currency_rupee',
+  REWARDS: 'stars',
+  HOTEL: 'hotel',
+  FOREX: 'currency_exchange',
+};
+
+function getBenefitIcon(category: string): string {
+  return BENEFIT_ICONS[category] ?? 'star';
+}
+
+function deriveProsAndCons(card: CardDetail) {
+  const pros: string[] = [];
+  const cons: string[] = [];
+
+  if (card.hasLoungeAccess) {
+    const loungeBenefit = card.benefits.find((b) => b.category === 'LOUNGE');
+    pros.push(loungeBenefit?.name ?? 'Complimentary airport lounge access');
+  }
+  if (card.hasZeroForex) pros.push('Zero forex markup on international transactions');
+  if (card.annualFee === 0) pros.push('Lifetime free — no annual fee ever');
+  if (card.feeWaiverThresholdInr && card.annualFee > 0) {
+    pros.push(`Annual fee waived on ${formatInr(card.feeWaiverThresholdInr)}+ annual spend`);
+  }
+  card.benefits
+    .filter((b) => b.isPrimaryHighlight)
+    .slice(0, 3)
+    .forEach((b) => {
+      if (!pros.includes(b.name)) pros.push(b.name);
+    });
+  if (card.milestones && card.milestones.length > 0) {
+    pros.push('Spending milestone bonuses for high spenders');
+  }
+
+  if (card.annualFee > 10000) {
+    cons.push(`High annual fee of ${formatInr(card.annualFee)}`);
+  } else if (card.annualFee > 0 && !card.feeWaiverThresholdInr) {
+    cons.push(`Annual fee of ${formatInr(card.annualFee)} with no waiver option`);
+  }
+  if (card.minIncomeAnnualInr && card.minIncomeAnnualInr >= 1500000) {
+    cons.push('High annual income requirement (₹15 lakh+)');
+  } else if (card.minIncomeAnnualInr && card.minIncomeAnnualInr >= 600000) {
+    cons.push('Minimum income requirement applies');
+  }
+  if (card.tier === 'SUPER_PREMIUM') {
+    cons.push('May require existing banking relationship or invitation');
+  }
+  if (!card.hasZeroForex) {
+    cons.push('Foreign transaction fee applies on overseas spends');
+  }
+  if (card.rewardType === 'POINTS') {
+    cons.push('Points redemption catalog may limit flexibility');
+  }
+  if (cons.length === 0) {
+    cons.push('Reward rates may vary by spend category');
+  }
+
+  return { pros: pros.slice(0, 6), cons: cons.slice(0, 4) };
+}
+
+function getIdealFor(card: CardDetail): { icon: string; label: string }[] {
+  const segments: { icon: string; label: string }[] = [];
+  if (card.hasLoungeAccess) segments.push({ icon: 'flight_takeoff', label: 'Frequent flyers' });
+  if (card.hasZeroForex) segments.push({ icon: 'public', label: 'International travelers' });
+  if (card.rewardType === 'CASHBACK') segments.push({ icon: 'savings', label: 'Cashback seekers' });
+  if (card.rewardType === 'MILES') segments.push({ icon: 'airlines', label: 'Miles collectors' });
+  if (card.tier === 'ENTRY' || card.tier === 'STANDARD') {
+    segments.push({ icon: 'person_add', label: 'First-time cardholders' });
+  }
+  if (card.tier === 'PREMIUM' || card.tier === 'ELITE' || card.tier === 'SUPER_PREMIUM') {
+    segments.push({ icon: 'diamond', label: 'Premium cardholders' });
+  }
+  if (card.benefits.some((b) => b.category === 'DINING')) {
+    segments.push({ icon: 'restaurant', label: 'Dining enthusiasts' });
+  }
+  if (card.milestones && card.milestones.length > 0) {
+    segments.push({ icon: 'trending_up', label: 'High spenders' });
+  }
+  return segments.slice(0, 4);
+}
+
+function generateFAQs(card: CardDetail): { q: string; a: string }[] {
+  const faqs: { q: string; a: string }[] = [];
+
+  faqs.push({
+    q: `What is the annual fee for ${card.name}?`,
+    a:
+      card.annualFee === 0
+        ? `The ${card.name} is a lifetime free credit card — there is no annual or joining fee.`
+        : `The ${card.name} has an annual fee of ${formatInr(card.annualFee)}${
+            card.feeWaiverThresholdInr
+              ? `. The fee is waived if you spend ${formatInr(card.feeWaiverThresholdInr)} or more in the card anniversary year.`
+              : '.'
+          }`,
+  });
+
+  if (card.rewardRules && card.rewardRules.length > 0) {
+    const topRule = card.rewardRules.reduce(
+      (max, r) => (r.rate > max.rate ? r : max),
+      card.rewardRules[0]
+    );
+    faqs.push({
+      q: `How are reward points earned on ${card.name}?`,
+      a: `${card.name} offers up to ${topRule.rateType === 'MULTIPLIER' ? `${topRule.rate}x reward points` : `${topRule.rate}% ${card.rewardType === 'CASHBACK' ? 'cashback' : 'back'}`} on eligible spends. Each point is valued at ₹${card.pointValueInr.toFixed(2)}, giving an effective return rate of ${card.pointValueInr.toFixed(2)}%. Points are typically credited within 2–3 business days of the transaction.`,
+    });
+  }
+
+  if (card.hasLoungeAccess) {
+    const loungeBenefit = card.benefits.find((b) => b.category === 'LOUNGE');
+    faqs.push({
+      q: `Does ${card.name} provide airport lounge access?`,
+      a: loungeBenefit?.description
+        ? `Yes. ${loungeBenefit.description}`
+        : `Yes, ${card.name} includes complimentary airport lounge access for the primary cardholder at domestic and select international airports. Check the ${card.issuer.name} app or welcome kit for participating lounges and visit limits.`,
+    });
+  }
+
+  if (card.hasZeroForex) {
+    faqs.push({
+      q: `Is there a foreign transaction fee on ${card.name}?`,
+      a: `No — ${card.name} charges zero forex markup, making it an excellent choice for international travel, overseas online shopping, and foreign currency transactions. You pay the standard Mastercard/Visa exchange rate with no extra surcharge.`,
+    });
+  } else {
+    faqs.push({
+      q: `What is the foreign transaction fee on ${card.name}?`,
+      a: `${card.name} levies a foreign transaction fee on international purchases. Please refer to the official ${card.issuer.name} Key Fact Statement (KFS) or the cardholder agreement for the exact markup percentage.`,
+    });
+  }
+
+  if (card.feeWaiverThresholdInr && card.annualFee > 0) {
+    faqs.push({
+      q: `How can I get the ${card.name} annual fee waived?`,
+      a: `Spend ${formatInr(card.feeWaiverThresholdInr)} or more in your card anniversary year to receive an automatic fee reversal of ${formatInr(card.annualFee)}. The reversal is typically credited within 30–45 days of crossing the threshold.`,
+    });
+  }
+
+  if (card.minIncomeAnnualInr) {
+    faqs.push({
+      q: `What is the income eligibility for ${card.name}?`,
+      a: `${card.name} requires a minimum annual income of ${formatInr(card.minIncomeAnnualInr)} for salaried applicants. Self-employed individuals may need to demonstrate equivalent annual turnover via ITR.${card.minCreditScore ? ` A CIBIL score of ${card.minCreditScore}+ is also recommended.` : ''}`,
+    });
+  }
+
+  faqs.push({
+    q: `How do I apply for ${card.name}?`,
+    a: `You can apply for ${card.name} online through the official ${card.issuer.name} website${card.applyUrl ? '' : ' or by visiting your nearest branch'}. Keep your PAN card, Aadhaar, recent salary slips (last 3 months) or latest ITR, and 3 months' bank statements ready. Most applications receive a decision within 7–10 working days.`,
+  });
+
+  return faqs;
+}
 
 function computeRewards(
   rules: RewardRule[],
   spends: Record<string, number>,
   pointValueInr: number,
-  annualFee: number
+  annualFee: number,
+  categories: Category[]
 ) {
   let totalAnnualPoints = 0;
-  const breakdown: { categoryId: string; categoryName: string; rateLabel: string; monthlySpend: number; annualPoints: number; valueInr: number }[] = [];
+  const breakdown: {
+    categoryId: string;
+    categoryName: string;
+    rateLabel: string;
+    monthlySpend: number;
+    annualPoints: number;
+    valueInr: number;
+  }[] = [];
 
   const sortedRules = [...rules].sort((a, b) => b.priority - a.priority);
 
@@ -57,7 +217,6 @@ function computeRewards(
           break;
         }
       } else {
-        // base rule
         if (!bestRule) bestRule = rule;
       }
     }
@@ -78,14 +237,13 @@ function computeRewards(
     }
 
     const rateLabel =
-      bestRule.rateType === 'MULTIPLIER'
-        ? `${bestRule.rate}x`
-        : `${bestRule.rate}%`;
+      bestRule.rateType === 'MULTIPLIER' ? `${bestRule.rate}x` : `${bestRule.rate}%`;
 
+    const backendCat = categories.find((c) => c.id === categoryId);
     totalAnnualPoints += points;
     breakdown.push({
       categoryId,
-      categoryName: DEFAULT_CATEGORIES.find((c) => c.id === categoryId)?.name ?? categoryId,
+      categoryName: backendCat?.displayName ?? backendCat?.name ?? categoryId,
       rateLabel,
       monthlySpend: monthly,
       annualPoints: Math.round(points),
@@ -98,11 +256,43 @@ function computeRewards(
   const totalAnnualSpend = Object.values(spends).reduce((a, b) => a + b * 12, 0);
   const effectiveRatePct = totalAnnualSpend > 0 ? (cashValueInr / totalAnnualSpend) * 100 : 0;
 
-  return { totalAnnualPoints: Math.round(totalAnnualPoints), cashValueInr, netProfitInr, effectiveRatePct, breakdown };
+  return {
+    totalAnnualPoints: Math.round(totalAnnualPoints),
+    cashValueInr,
+    netProfitInr,
+    effectiveRatePct,
+    breakdown,
+  };
 }
 
 function SkeletonBlock({ className }: { className?: string }) {
   return <div className={`skeleton ${className ?? ''}`} />;
+}
+
+function FAQItem({ q, a }: { q: string; a: string }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="border-b border-outline-variant last:border-0">
+      <button
+        className="flex items-center justify-between w-full py-4 text-left gap-4"
+        onClick={() => setOpen((o) => !o)}
+        aria-expanded={open}
+      >
+        <span className="font-body font-semibold text-on-surface text-sm">{q}</span>
+        <span
+          className={clsx(
+            'material-symbols-outlined text-on-surface-variant shrink-0 transition-transform duration-200',
+            open && 'rotate-180'
+          )}
+        >
+          expand_more
+        </span>
+      </button>
+      {open && (
+        <p className="font-body text-sm text-on-surface-variant pb-4 leading-relaxed">{a}</p>
+      )}
+    </div>
+  );
 }
 
 export default function CardDetailPage() {
@@ -121,6 +311,11 @@ export default function CardDetailPage() {
     queryKey: ['expense-profiles', 'active'],
     queryFn: expenseApi.getActiveProfile,
     retry: false,
+  });
+
+  const { data: categories, isLoading: categoriesLoading } = useQuery({
+    queryKey: ['categories'],
+    queryFn: cardsApi.getCategories,
   });
 
   useEffect(() => {
@@ -151,13 +346,19 @@ export default function CardDetailPage() {
 
   useEffect(() => {
     if (!card) return;
+    const faqs = generateFAQs(card);
     injectJsonLd('breadcrumb-card-detail', {
       '@context': 'https://schema.org',
       '@type': 'BreadcrumbList',
       itemListElement: [
         { '@type': 'ListItem', position: 1, name: 'Home', item: `${SITE_URL}/` },
         { '@type': 'ListItem', position: 2, name: 'Credit Cards', item: `${SITE_URL}/cards` },
-        { '@type': 'ListItem', position: 3, name: card.name, item: `${SITE_URL}/cards/${card.slug}` },
+        {
+          '@type': 'ListItem',
+          position: 3,
+          name: card.name,
+          item: `${SITE_URL}/cards/${card.slug}`,
+        },
       ],
     });
     injectJsonLd('card-product', {
@@ -174,20 +375,28 @@ export default function CardDetailPage() {
         availability: 'https://schema.org/InStock',
       },
     });
+    injectJsonLd('card-faq', {
+      '@context': 'https://schema.org',
+      '@type': 'FAQPage',
+      mainEntity: faqs.map(({ q, a }) => ({
+        '@type': 'Question',
+        name: q,
+        acceptedAnswer: { '@type': 'Answer', text: a },
+      })),
+    });
     return () => {
       removeJsonLd('breadcrumb-card-detail');
       removeJsonLd('card-product');
+      removeJsonLd('card-faq');
     };
   }, [card]);
 
   const rewards = card
-    ? computeRewards(card.rewardRules ?? [], spends, card.pointValueInr, card.annualFee)
+    ? computeRewards(card.rewardRules ?? [], spends, card.pointValueInr, card.annualFee, categories ?? [])
     : null;
 
   const breakEvenMonthly =
-    card && card.pointValueInr > 0
-      ? card.annualFee / card.pointValueInr / 12
-      : 0;
+    card && card.pointValueInr > 0 ? card.annualFee / card.pointValueInr / 12 : 0;
 
   const totalMonthlySpend = Object.values(spends).reduce((a, b) => a + b, 0);
 
@@ -224,6 +433,18 @@ export default function CardDetailPage() {
     { id: 'calculator', label: 'Rewards Calculator', icon: 'calculate' },
     { id: 'profit', label: 'Profit Analysis', icon: 'trending_up' },
   ];
+
+  const { pros, cons } = deriveProsAndCons(card);
+  const idealFor = getIdealFor(card);
+  const faqs = generateFAQs(card);
+
+  // Build reward rules with category context
+  const baseRules = (card.rewardRules ?? []).filter(
+    (r) => !r.categoryIds || r.categoryIds.length === 0
+  );
+  const categoryRules = (card.rewardRules ?? []).filter(
+    (r) => r.categoryIds && r.categoryIds.length > 0
+  );
 
   return (
     <PublicLayout>
@@ -306,7 +527,9 @@ export default function CardDetailPage() {
               <div className="flex flex-wrap gap-2 mb-5">
                 {card.hasLoungeAccess && (
                   <span className="flex items-center gap-1 bg-primary-fixed/30 text-primary text-xs px-2.5 py-1 rounded-full font-semibold">
-                    <span className="material-symbols-outlined text-sm">airline_seat_recline_extra</span>
+                    <span className="material-symbols-outlined text-sm">
+                      airline_seat_recline_extra
+                    </span>
                     Lounge Access
                   </span>
                 )}
@@ -331,7 +554,7 @@ export default function CardDetailPage() {
                   <a
                     href={card.applyUrl}
                     target="_blank"
-                    rel="noopener noreferrer"
+                    rel="noopener noreferrer sponsored"
                     className="btn-primary text-sm py-2.5 px-5 flex items-center gap-2"
                   >
                     <span className="material-symbols-outlined text-base">open_in_new</span>
@@ -377,43 +600,232 @@ export default function CardDetailPage() {
           ))}
         </div>
 
-        {/* Tab: Overview */}
+        {/* ═══════════════════════════════════════════════ */}
+        {/* Tab: Overview                                  */}
+        {/* ═══════════════════════════════════════════════ */}
         {activeTab === 'overview' && (
           <div className="space-y-6">
-            {/* Description */}
-            {card.description && (
-              <div className="card-surface p-5">
-                <p className="font-body text-on-surface-variant leading-relaxed">
+
+            {/* About */}
+            <div className="card-surface p-6">
+              <h2 className="font-headline font-bold text-lg text-on-surface mb-3">
+                About {card.name}
+              </h2>
+              {card.description ? (
+                <p className="font-body text-on-surface-variant leading-relaxed mb-4">
                   {card.description}
                 </p>
-              </div>
-            )}
+              ) : (
+                <p className="font-body text-on-surface-variant leading-relaxed mb-4">
+                  The {card.name} is a {card.tier.replace('_', '-').toLowerCase()}-tier{' '}
+                  {card.rewardType === 'CASHBACK'
+                    ? 'cashback'
+                    : card.rewardType === 'MILES'
+                    ? 'travel miles'
+                    : 'reward points'}{' '}
+                  credit card issued by {card.issuer.name} on the {card.network} network.
+                  {card.annualFee === 0
+                    ? ' It is a lifetime free card with no annual or joining fee.'
+                    : ` It carries an annual fee of ${formatInr(card.annualFee)}${
+                        card.feeWaiverThresholdInr
+                          ? `, waived on annual spending of ${formatInr(card.feeWaiverThresholdInr)} or more`
+                          : ''
+                      }.`}
+                  {card.hasLoungeAccess
+                    ? ' The card includes complimentary airport lounge access, making it well suited for frequent flyers.'
+                    : ''}
+                  {card.hasZeroForex
+                    ? ' With zero foreign transaction charges, it is a strong companion for international travel.'
+                    : ''}
+                </p>
+              )}
 
-            {/* Reward Rules */}
-            {card.rewardRules && card.rewardRules.length > 0 && (
-              <div className="card-surface p-5">
-                <h2 className="font-headline font-bold text-lg text-on-surface mb-4">
-                  Rewards Structure
-                </h2>
-                <div className="flex flex-wrap gap-2">
-                  {card.rewardRules.map((rule) => (
-                    <span
-                      key={rule.id}
-                      className="flex items-center gap-1.5 bg-primary-fixed/30 text-primary text-sm font-semibold px-3 py-1.5 rounded-full"
-                    >
-                      <span className="font-headline font-black">
-                        {rule.rateType === 'MULTIPLIER' ? `${rule.rate}x` : `${rule.rate}%`}
+              {/* Best For chips */}
+              {idealFor.length > 0 && (
+                <div>
+                  <p className="font-body text-xs font-semibold text-on-surface-variant uppercase tracking-wide mb-2">
+                    Best For
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {idealFor.map(({ icon, label }) => (
+                      <span
+                        key={label}
+                        className="flex items-center gap-1.5 bg-primary/10 text-primary text-xs font-semibold px-3 py-1.5 rounded-full"
+                      >
+                        <span className="material-symbols-outlined text-sm">{icon}</span>
+                        {label}
                       </span>
-                      {rule.name}
-                    </span>
-                  ))}
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Pros & Cons */}
+            {(pros.length > 0 || cons.length > 0) && (
+              <div className="card-surface p-6">
+                <h2 className="font-headline font-bold text-lg text-on-surface mb-4">
+                  Pros &amp; Cons
+                </h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                  {pros.length > 0 && (
+                    <div>
+                      <p className="font-body text-sm font-semibold text-secondary mb-3 flex items-center gap-1.5">
+                        <span className="material-symbols-outlined text-base">thumb_up</span>
+                        Pros
+                      </p>
+                      <ul className="space-y-2.5">
+                        {pros.map((pro) => (
+                          <li key={pro} className="flex items-start gap-2">
+                            <span className="material-symbols-outlined text-secondary text-base shrink-0 mt-0.5">
+                              check_circle
+                            </span>
+                            <span className="font-body text-sm text-on-surface">{pro}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                  {cons.length > 0 && (
+                    <div>
+                      <p className="font-body text-sm font-semibold text-error mb-3 flex items-center gap-1.5">
+                        <span className="material-symbols-outlined text-base">thumb_down</span>
+                        Cons
+                      </p>
+                      <ul className="space-y-2.5">
+                        {cons.map((con) => (
+                          <li key={con} className="flex items-start gap-2">
+                            <span className="material-symbols-outlined text-error text-base shrink-0 mt-0.5">
+                              cancel
+                            </span>
+                            <span className="font-body text-sm text-on-surface">{con}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
 
-            {/* Benefits */}
+            {/* Reward Earning Structure */}
+            {card.rewardRules && card.rewardRules.length > 0 && (
+              <div className="card-surface p-6">
+                <h2 className="font-headline font-bold text-lg text-on-surface mb-1">
+                  Reward Earning Structure
+                </h2>
+                <p className="font-body text-sm text-on-surface-variant mb-4">
+                  Each point is worth{' '}
+                  <strong>₹{card.pointValueInr.toFixed(2)}</strong> — an effective return of{' '}
+                  <strong>{card.pointValueInr.toFixed(2)}%</strong> on spend.
+                </p>
+                <div className="overflow-x-auto">
+                  <table className="w-full font-body text-sm">
+                    <thead>
+                      <tr className="border-b border-outline-variant text-xs text-on-surface-variant uppercase tracking-wide">
+                        <th className="text-left py-2.5 pr-4">Category</th>
+                        <th className="text-center py-2.5 pr-4">Earn Rate</th>
+                        <th className="text-right py-2.5">Per ₹10,000 Spent</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {categoryRules.map((rule) => {
+                        const catNames = (rule.categoryIds ?? [])
+                          .map((cid) => {
+                            const bc = (categories ?? []).find((c) => c.id === cid);
+                            return bc?.displayName ?? bc?.name ?? cid;
+                          })
+                          .join(', ');
+                        const perTenK =
+                          rule.rateType === 'MULTIPLIER'
+                            ? (10000 / 100) * rule.rate
+                            : (10000 * rule.rate) / 100;
+                        const valuePerTenK = Math.round(perTenK * card.pointValueInr);
+                        return (
+                          <tr
+                            key={rule.id}
+                            className="border-b border-outline-variant/50 hover:bg-surface-container-low/50"
+                          >
+                            <td className="py-3 pr-4 text-on-surface capitalize">{catNames || rule.name}</td>
+                            <td className="py-3 pr-4 text-center">
+                              <span className="font-headline font-bold text-primary">
+                                {rule.rateType === 'MULTIPLIER'
+                                  ? `${rule.rate}x`
+                                  : `${rule.rate}%`}
+                              </span>
+                            </td>
+                            <td className="py-3 text-right">
+                              <span className="text-on-surface-variant">
+                                {Math.round(perTenK)} pts
+                              </span>
+                              <span className="text-secondary font-semibold ml-2">
+                                ≈ {formatInr(valuePerTenK)}
+                              </span>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                      {baseRules.map((rule) => {
+                        const perTenK =
+                          rule.rateType === 'MULTIPLIER'
+                            ? (10000 / 100) * rule.rate
+                            : (10000 * rule.rate) / 100;
+                        const valuePerTenK = Math.round(perTenK * card.pointValueInr);
+                        return (
+                          <tr
+                            key={rule.id}
+                            className="border-b border-outline-variant/50 last:border-0 bg-surface-container-low/30"
+                          >
+                            <td className="py-3 pr-4 text-on-surface-variant italic">
+                              All other spends
+                            </td>
+                            <td className="py-3 pr-4 text-center">
+                              <span className="font-headline font-bold text-on-surface">
+                                {rule.rateType === 'MULTIPLIER'
+                                  ? `${rule.rate}x`
+                                  : `${rule.rate}%`}
+                              </span>
+                            </td>
+                            <td className="py-3 text-right">
+                              <span className="text-on-surface-variant">
+                                {Math.round(perTenK)} pts
+                              </span>
+                              <span className="text-secondary font-semibold ml-2">
+                                ≈ {formatInr(valuePerTenK)}
+                              </span>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+                {card.rewardType === 'POINTS' && (
+                  <p className="font-body text-xs text-on-surface-variant mt-3 border-t border-outline-variant pt-3">
+                    Points can typically be redeemed for flight tickets, hotel bookings, cashback,
+                    gift vouchers, or merchandise via the {card.issuer.name} rewards portal.
+                    Redemption value may vary by option.
+                  </p>
+                )}
+                {card.rewardType === 'CASHBACK' && (
+                  <p className="font-body text-xs text-on-surface-variant mt-3 border-t border-outline-variant pt-3">
+                    Cashback is credited directly to your statement, reducing your outstanding
+                    balance. No redemption required.
+                  </p>
+                )}
+                {card.rewardType === 'MILES' && (
+                  <p className="font-body text-xs text-on-surface-variant mt-3 border-t border-outline-variant pt-3">
+                    Miles can be transferred to partner airlines and hotel loyalty programs.
+                    Transfer ratios vary by partner — check the {card.issuer.name} website for
+                    current transfer partners and ratios.
+                  </p>
+                )}
+              </div>
+            )}
+
+            {/* Card Benefits */}
             {card.benefits && card.benefits.length > 0 && (
-              <div className="card-surface p-5">
+              <div className="card-surface p-6">
                 <h2 className="font-headline font-bold text-lg text-on-surface mb-4">
                   Card Benefits
                 </h2>
@@ -440,19 +852,13 @@ export default function CardDetailPage() {
                             benefit.isPrimaryHighlight ? 'text-on-primary' : 'text-on-surface-variant'
                           )}
                         >
-                          {benefit.category === 'LOUNGE'
-                            ? 'airline_seat_recline_extra'
-                            : benefit.category === 'DINING'
-                            ? 'restaurant'
-                            : benefit.category === 'INSURANCE'
-                            ? 'shield'
-                            : benefit.category === 'FUEL'
-                            ? 'local_gas_station'
-                            : 'star'}
+                          {getBenefitIcon(benefit.category)}
                         </span>
                       </div>
                       <div className="min-w-0">
-                        <p className="font-body font-semibold text-on-surface text-sm">{benefit.name}</p>
+                        <p className="font-body font-semibold text-on-surface text-sm">
+                          {benefit.name}
+                        </p>
                         <p className="font-body text-xs text-on-surface-variant mt-0.5 leading-relaxed">
                           {benefit.description}
                         </p>
@@ -468,12 +874,15 @@ export default function CardDetailPage() {
               </div>
             )}
 
-            {/* Milestones */}
+            {/* Spending Milestones */}
             {card.milestones && card.milestones.length > 0 && (
-              <div className="card-surface p-5">
-                <h2 className="font-headline font-bold text-lg text-on-surface mb-4">
+              <div className="card-surface p-6">
+                <h2 className="font-headline font-bold text-lg text-on-surface mb-1">
                   Spending Milestones
                 </h2>
+                <p className="font-body text-sm text-on-surface-variant mb-4">
+                  Unlock bonus rewards when your annual spend crosses these thresholds.
+                </p>
                 <div className="space-y-3">
                   {card.milestones.map((milestone) => (
                     <div
@@ -487,7 +896,10 @@ export default function CardDetailPage() {
                       </div>
                       <div className="flex-1">
                         <p className="font-body font-semibold text-on-surface text-sm">
-                          Spend {formatInr(milestone.spendThresholdInr)} ({milestone.period})
+                          Spend {formatInr(milestone.spendThresholdInr)}{' '}
+                          <span className="text-on-surface-variant font-normal">
+                            ({milestone.period})
+                          </span>
                         </p>
                         <p className="font-body text-xs text-on-surface-variant mt-0.5">
                           {milestone.rewardDescription}
@@ -504,48 +916,207 @@ export default function CardDetailPage() {
               </div>
             )}
 
-            {/* Fee Transparency */}
-            <div className="card-surface p-5">
-              <h2 className="font-headline font-bold text-lg text-on-surface mb-4">
-                Fee & Eligibility
+            {/* Fees & Charges */}
+            <div className="card-surface p-6">
+              <h2 className="font-headline font-bold text-lg text-on-surface mb-1">
+                Fees &amp; Charges
               </h2>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                <div className="bg-surface-container-low rounded-xl p-4">
-                  <p className="font-body text-xs text-on-surface-variant mb-1">Annual Fee</p>
-                  <p className="font-headline font-bold text-on-surface">
-                    {card.annualFee === 0 ? 'FREE' : formatInr(card.annualFee)}
+              <p className="font-body text-sm text-on-surface-variant mb-4">
+                Key fees at a glance. For the complete schedule refer to the official Key Fact
+                Statement (KFS) on the {card.issuer.name} website.
+              </p>
+              <div className="overflow-x-auto">
+                <table className="w-full font-body text-sm">
+                  <tbody className="divide-y divide-outline-variant">
+                    <tr>
+                      <td className="py-3 pr-4 text-on-surface-variant w-1/2">Annual Fee</td>
+                      <td className="py-3 font-semibold text-on-surface">
+                        {card.annualFee === 0 ? (
+                          <span className="text-secondary">Lifetime Free</span>
+                        ) : (
+                          formatInr(card.annualFee)
+                        )}
+                      </td>
+                    </tr>
+                    {card.feeWaiverThresholdInr && card.annualFee > 0 && (
+                      <tr>
+                        <td className="py-3 pr-4 text-on-surface-variant">Fee Waiver</td>
+                        <td className="py-3 font-semibold text-secondary">
+                          On {formatInr(card.feeWaiverThresholdInr)}+ annual spend
+                        </td>
+                      </tr>
+                    )}
+                    <tr>
+                      <td className="py-3 pr-4 text-on-surface-variant">Forex Markup</td>
+                      <td className="py-3 font-semibold text-on-surface">
+                        {card.hasZeroForex ? (
+                          <span className="text-secondary">0% (Zero Markup)</span>
+                        ) : (
+                          'As per issuer schedule'
+                        )}
+                      </td>
+                    </tr>
+                    {card.minIncomeAnnualInr && (
+                      <tr>
+                        <td className="py-3 pr-4 text-on-surface-variant">Min. Income Required</td>
+                        <td className="py-3 font-semibold text-on-surface">
+                          {formatInr(card.minIncomeAnnualInr)} per year
+                        </td>
+                      </tr>
+                    )}
+                    <tr>
+                      <td className="py-3 pr-4 text-on-surface-variant">Interest Rate (APR)</td>
+                      <td className="py-3 text-on-surface-variant">Refer to KFS</td>
+                    </tr>
+                    <tr>
+                      <td className="py-3 pr-4 text-on-surface-variant">Late Payment Charges</td>
+                      <td className="py-3 text-on-surface-variant">Refer to KFS</td>
+                    </tr>
+                    <tr>
+                      <td className="py-3 pr-4 text-on-surface-variant">Cash Advance Fee</td>
+                      <td className="py-3 text-on-surface-variant">Refer to KFS</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* Eligibility & Documents */}
+            <div className="card-surface p-6">
+              <h2 className="font-headline font-bold text-lg text-on-surface mb-4">
+                Eligibility &amp; Documents Required
+              </h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                {/* Eligibility */}
+                <div>
+                  <p className="font-body text-sm font-semibold text-on-surface mb-3">
+                    Eligibility Criteria
+                  </p>
+                  <ul className="space-y-2.5">
+                    <li className="flex items-start gap-2">
+                      <span className="material-symbols-outlined text-primary text-base shrink-0 mt-0.5">
+                        check
+                      </span>
+                      <span className="font-body text-sm text-on-surface-variant">
+                        Age: 18–70 years (primary cardholder)
+                      </span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="material-symbols-outlined text-primary text-base shrink-0 mt-0.5">
+                        check
+                      </span>
+                      <span className="font-body text-sm text-on-surface-variant">
+                        Minimum annual income:{' '}
+                        {card.minIncomeAnnualInr
+                          ? formatInr(card.minIncomeAnnualInr)
+                          : 'As per bank norms'}
+                      </span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="material-symbols-outlined text-primary text-base shrink-0 mt-0.5">
+                        check
+                      </span>
+                      <span className="font-body text-sm text-on-surface-variant">
+                        CIBIL score:{' '}
+                        {card.minCreditScore ? `${card.minCreditScore}+` : '750+ recommended'}
+                      </span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="material-symbols-outlined text-primary text-base shrink-0 mt-0.5">
+                        check
+                      </span>
+                      <span className="font-body text-sm text-on-surface-variant">
+                        Employment: Salaried or self-employed Indian resident
+                      </span>
+                    </li>
+                  </ul>
+                </div>
+                {/* Documents */}
+                <div>
+                  <p className="font-body text-sm font-semibold text-on-surface mb-3">
+                    Documents Required
+                  </p>
+                  <ul className="space-y-2.5">
+                    {[
+                      'PAN Card (mandatory)',
+                      'Aadhaar / Passport / Voter ID (address proof)',
+                      'Salary slips — last 3 months (salaried)',
+                      'Latest ITR or Form 16 (self-employed / salaried)',
+                      'Bank statements — last 3 months',
+                      'Passport-size photograph',
+                    ].map((doc) => (
+                      <li key={doc} className="flex items-start gap-2">
+                        <span className="material-symbols-outlined text-on-surface-variant text-base shrink-0 mt-0.5">
+                          description
+                        </span>
+                        <span className="font-body text-sm text-on-surface-variant">{doc}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            {/* FAQ */}
+            {faqs.length > 0 && (
+              <div className="card-surface p-6">
+                <h2 className="font-headline font-bold text-lg text-on-surface mb-2">
+                  Frequently Asked Questions
+                </h2>
+                <p className="font-body text-sm text-on-surface-variant mb-4">
+                  Common questions about {card.name}.
+                </p>
+                <div>
+                  {faqs.map((faq) => (
+                    <FAQItem key={faq.q} q={faq.q} a={faq.a} />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Apply CTA */}
+            <div className="card-surface p-6 bg-primary/5 border border-primary/10">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div>
+                  <p className="font-headline font-bold text-on-surface mb-1">
+                    Ready to apply for {card.name}?
+                  </p>
+                  <p className="font-body text-sm text-on-surface-variant">
+                    Apply directly on the {card.issuer.name} website. Most decisions within
+                    7–10 working days.
+                  </p>
+                  <p className="font-body text-xs text-on-surface-variant/60 mt-1">
+                    Affiliate disclosure: CreditBrain may earn a referral fee if you apply via our
+                    link. This does not affect our editorial independence.
                   </p>
                 </div>
-                {card.feeWaiverThresholdInr && (
-                  <div className="bg-surface-container-low rounded-xl p-4">
-                    <p className="font-body text-xs text-on-surface-variant mb-1">Fee Waiver At</p>
-                    <p className="font-headline font-bold text-secondary">
-                      {formatInr(card.feeWaiverThresholdInr)}/yr
-                    </p>
-                  </div>
-                )}
-                {card.minIncomeAnnualInr && (
-                  <div className="bg-surface-container-low rounded-xl p-4">
-                    <p className="font-body text-xs text-on-surface-variant mb-1">Min Income</p>
-                    <p className="font-headline font-bold text-on-surface">
-                      {formatInr(card.minIncomeAnnualInr)}/yr
-                    </p>
-                  </div>
-                )}
-                {card.minCreditScore && (
-                  <div className="bg-surface-container-low rounded-xl p-4">
-                    <p className="font-body text-xs text-on-surface-variant mb-1">Min Credit Score</p>
-                    <p className="font-headline font-bold text-on-surface">
-                      {card.minCreditScore}+
-                    </p>
-                  </div>
+                {card.applyUrl ? (
+                  <a
+                    href={card.applyUrl}
+                    target="_blank"
+                    rel="noopener noreferrer sponsored"
+                    className="btn-primary text-sm py-3 px-6 flex items-center gap-2 shrink-0"
+                  >
+                    <span className="material-symbols-outlined text-base">open_in_new</span>
+                    Apply Now
+                  </a>
+                ) : (
+                  <Link
+                    href={`/compare?cards=${card.id}`}
+                    className="btn-outlined text-sm py-3 px-6 flex items-center gap-2 shrink-0"
+                  >
+                    <span className="material-symbols-outlined text-base">balance</span>
+                    Compare Similar Cards
+                  </Link>
                 )}
               </div>
             </div>
           </div>
         )}
 
-        {/* Tab: Rewards Calculator */}
+        {/* ═══════════════════════════════════════════════ */}
+        {/* Tab: Rewards Calculator                        */}
+        {/* ═══════════════════════════════════════════════ */}
         {activeTab === 'calculator' && (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Inputs */}
@@ -554,19 +1125,29 @@ export default function CardDetailPage() {
                 Your Monthly Spend
               </h2>
               <p className="font-body text-sm text-on-surface-variant mb-5">
-                {activeProfile ? 'Pre-filled from your expense profile.' : 'Enter your monthly spending by category.'}
+                {activeProfile
+                  ? 'Pre-filled from your expense profile.'
+                  : 'Enter your monthly spending by category.'}
               </p>
-              <div className="space-y-4">
-                {DEFAULT_CATEGORIES.map((cat) => (
-                  <SpendInput
-                    key={cat.id}
-                    label={cat.name}
-                    icon={cat.icon}
-                    value={spends[cat.id] ?? 0}
-                    onChange={(val) => setSpends((prev) => ({ ...prev, [cat.id]: val }))}
-                  />
-                ))}
-              </div>
+              {categoriesLoading ? (
+                <div className="space-y-4">
+                  {[...Array(6)].map((_, i) => (
+                    <div key={i} className="skeleton h-14 rounded-xl" />
+                  ))}
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {(categories ?? []).map((cat) => (
+                    <SpendInput
+                      key={cat.id}
+                      label={cat.displayName || cat.name}
+                      icon={cat.icon ?? 'category'}
+                      value={spends[cat.id] ?? 0}
+                      onChange={(val) => setSpends((prev) => ({ ...prev, [cat.id]: val }))}
+                    />
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* Results */}
@@ -721,7 +1302,9 @@ export default function CardDetailPage() {
           </div>
         )}
 
-        {/* Tab: Profit Analysis */}
+        {/* ═══════════════════════════════════════════════ */}
+        {/* Tab: Profit Analysis                           */}
+        {/* ═══════════════════════════════════════════════ */}
         {activeTab === 'profit' && (
           <div className="space-y-6">
             {/* Fee + Break-even */}
@@ -755,9 +1338,7 @@ export default function CardDetailPage() {
                 >
                   {rewards && rewards.netProfitInr >= 0 ? 'trending_up' : 'trending_down'}
                 </span>
-                <p className="font-body text-sm text-on-surface-variant mb-1">
-                  Net Annual Profit
-                </p>
+                <p className="font-body text-sm text-on-surface-variant mb-1">Net Annual Profit</p>
                 <p
                   className={clsx(
                     'font-headline font-bold text-2xl',
@@ -816,9 +1397,10 @@ export default function CardDetailPage() {
                 </h2>
                 <div className="space-y-3">
                   {rewards.breakdown.map((row) => {
-                    const pct = rewards.cashValueInr > 0
-                      ? (row.valueInr / rewards.cashValueInr) * 100
-                      : 0;
+                    const pct =
+                      rewards.cashValueInr > 0
+                        ? (row.valueInr / rewards.cashValueInr) * 100
+                        : 0;
                     return (
                       <div key={row.categoryId}>
                         <div className="flex items-center justify-between mb-1">
