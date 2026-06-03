@@ -1,10 +1,12 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useQuery } from '@tanstack/react-query';
 import PublicLayout from '../../components/Layout/PublicLayout';
 import { useSeoMeta, injectJsonLd, removeJsonLd } from '../../hooks/useSeoMeta';
 import { SITE_URL } from '../../config';
+import { announcementsApi } from '../../api/announcements';
 
 const BENTO_ITEMS = [
   {
@@ -71,7 +73,36 @@ const STATS = [
   { value: '100%', label: 'Free to Use', icon: 'verified' },
 ];
 
+// Gradient classes per bgColor value from backend
+const BG_GRADIENT: Record<string, string> = {
+  amber:  'bg-gradient-to-r from-amber-500 to-orange-500',
+  blue:   'bg-gradient-to-r from-blue-600 to-indigo-600',
+  green:  'bg-gradient-to-r from-emerald-500 to-teal-600',
+  red:    'bg-gradient-to-r from-red-500 to-rose-600',
+  purple: 'bg-gradient-to-r from-purple-600 to-violet-600',
+};
+
 export default function LandingPage() {
+  const [showBanner, setShowBanner] = useState(false);
+
+  const { data: announcement } = useQuery({
+    queryKey: ['announcement-active'],
+    queryFn: announcementsApi.getActive,
+    staleTime: 5 * 60 * 1000, // 5 min
+  });
+
+  useEffect(() => {
+    if (!announcement) return;
+    const key = `cb-announcement-${announcement.id}`;
+    if (!localStorage.getItem(key)) setShowBanner(true);
+  }, [announcement]);
+
+  const dismissBanner = () => {
+    if (!announcement) return;
+    localStorage.setItem(`cb-announcement-${announcement.id}`, '1');
+    setShowBanner(false);
+  };
+
   useSeoMeta({
     title: 'CreditBrain — Find Your Perfect Credit Card in India',
     description:
@@ -149,6 +180,49 @@ export default function LandingPage() {
 
   return (
     <PublicLayout>
+      {/* Announcement Bar — backend-driven */}
+      {showBanner && announcement && (
+        <div className={`${BG_GRADIENT[announcement.bgColor ?? 'amber'] ?? BG_GRADIENT.amber} text-white`}>
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2.5 flex items-center gap-3">
+            <span className="material-symbols-outlined text-base shrink-0">campaign</span>
+            {announcement.badge && (
+              <span className="bg-white/20 text-white text-xs font-semibold px-2 py-0.5 rounded-full shrink-0 hidden sm:inline">
+                {announcement.badge}
+              </span>
+            )}
+            <p className="font-body text-sm flex-1 line-clamp-1">{announcement.text}</p>
+            {announcement.cta && (
+              announcement.external ? (
+                <a
+                  href={announcement.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-body text-sm font-bold whitespace-nowrap underline underline-offset-2 shrink-0 flex items-center gap-1 hover:no-underline"
+                >
+                  {announcement.cta}
+                  <span className="material-symbols-outlined text-sm">open_in_new</span>
+                </a>
+              ) : (
+                <Link
+                  href={announcement.href}
+                  className="font-body text-sm font-bold whitespace-nowrap underline underline-offset-2 shrink-0 flex items-center gap-1 hover:no-underline"
+                >
+                  {announcement.cta}
+                  <span className="material-symbols-outlined text-sm">arrow_forward</span>
+                </Link>
+              )
+            )}
+            <button
+              onClick={dismissBanner}
+              aria-label="Dismiss announcement"
+              className="shrink-0 ml-1 hover:bg-white/20 rounded-full p-0.5 transition-colors"
+            >
+              <span className="material-symbols-outlined text-base">close</span>
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Hero */}
       <section className="bg-gradient-to-br from-primary to-primary-container text-on-primary overflow-hidden relative">
         <div className="absolute inset-0 overflow-hidden pointer-events-none">

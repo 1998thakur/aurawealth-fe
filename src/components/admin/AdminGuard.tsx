@@ -71,6 +71,16 @@ export default function AdminGuard({ children }: { children: React.ReactNode }) 
             >
               Cards
             </Link>
+            <Link
+              href="/admin/announcements"
+              className={`text-sm ${
+                pathname?.startsWith('/admin/announcements')
+                  ? 'text-blue-600 font-medium'
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              Announcements
+            </Link>
           </nav>
         </div>
         <div className="flex items-center gap-4">

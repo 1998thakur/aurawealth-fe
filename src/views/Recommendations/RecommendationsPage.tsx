@@ -7,17 +7,41 @@ import { useQuery } from '@tanstack/react-query';
 import clsx from 'clsx';
 import PublicLayout from '../../components/Layout/PublicLayout';
 import CardGradient from '../../components/CardGradient';
-import { recommendationsApi } from '../../api/recommendations';
+import { recommendationsApi, type RecommendationSortBy } from '../../api/recommendations';
 import { formatInr } from '../../utils/format';
 import type { RecommendationItem } from '../../types/recommendations';
 import type { RewardType, CardNetwork, CardTier } from '../../types/cards';
 
 type FilterCategory = 'ALL' | 'CASHBACK' | 'POINTS' | 'MILES' | 'TRAVEL' | 'PREMIUM';
+type SortBy = RecommendationSortBy;
+
+const RANK_STYLE: Record<number, { bg: string; text: string; label: string }> = {
+  1: { bg: 'bg-yellow-400',  text: 'text-yellow-900', label: '🥇' },
+  2: { bg: 'bg-slate-300',   text: 'text-slate-700',  label: '🥈' },
+  3: { bg: 'bg-amber-600',   text: 'text-white',      label: '🥉' },
+};
+
+const SORT_OPTIONS: { id: SortBy; label: string; icon: string }[] = [
+  { id: 'rank',          label: 'Best Match',    icon: 'auto_awesome' },
+  { id: 'netValue',      label: 'Highest Value', icon: 'trending_up' },
+  { id: 'effectiveRate', label: 'Best Rate',     icon: 'percent' },
+  { id: 'lowestFee',    label: 'Lowest Fee',    icon: 'arrow_downward' },
+];
+
+function sortItems(items: RecommendationItem[], sortBy: SortBy): RecommendationItem[] {
+  return [...items].sort((a, b) => {
+    switch (sortBy) {
+      case 'netValue':      return b.netAnnualProfitInr   - a.netAnnualProfitInr;
+      case 'effectiveRate': return b.effectiveRewardRate  - a.effectiveRewardRate;
+      case 'lowestFee':    return a.annualFee            - b.annualFee;
+      default:              return a.rank                 - b.rank;
+    }
+  });
+}
 
 function ScoreBar({ score }: { score: number }) {
   const pct = Math.min(100, Math.max(0, score));
-  const color =
-    pct >= 80 ? 'bg-secondary' : pct >= 60 ? 'bg-primary' : 'bg-outline';
+  const color = pct >= 80 ? 'bg-secondary' : pct >= 60 ? 'bg-primary' : 'bg-outline';
   return (
     <div className="flex items-center gap-2">
       <div className="flex-1 bg-surface-container rounded-full h-1.5">
@@ -33,25 +57,47 @@ function ScoreBar({ score }: { score: number }) {
   );
 }
 
-function RecommendationCard({ item }: { item: RecommendationItem }) {
+function RankBadge({ rank }: { rank: number }) {
+  const style = RANK_STYLE[rank];
+  if (style) {
+    return (
+      <div
+        className={clsx(
+          'w-9 h-9 rounded-full flex items-center justify-center shrink-0 text-lg',
+          style.bg
+        )}
+        title={`Rank #${rank}`}
+      >
+        {style.label}
+      </div>
+    );
+  }
+  return (
+    <div className="w-9 h-9 rounded-full bg-surface-container flex items-center justify-center shrink-0">
+      <span className="font-headline font-bold text-xs text-on-surface-variant">#{rank}</span>
+    </div>
+  );
+}
+
+function RecommendationCard({ item, displayRank }: { item: RecommendationItem; displayRank: number }) {
   return (
     <div
       className={clsx(
-        'card-surface p-0 overflow-hidden hover:shadow-md transition-shadow duration-200',
+        'card-surface overflow-hidden hover:shadow-md transition-shadow duration-200',
         item.rank === 1 && 'ring-2 ring-primary'
       )}
     >
-      {/* Top badge */}
+      {/* Top badge for #1 */}
       {item.rank === 1 && (
         <div className="bg-primary text-on-primary text-xs font-body font-semibold px-4 py-1.5 flex items-center gap-1.5">
           <span className="material-symbols-outlined text-sm">auto_awesome</span>
-          Highly Recommended — Best Match for You
+          Highest Recommended — Best Match for Your Spending
         </div>
       )}
 
       <div className="flex flex-col sm:flex-row gap-0">
         {/* Card visual */}
-        <div className="sm:w-48 p-4 shrink-0">
+        <div className="sm:w-52 p-4 shrink-0 relative">
           <CardGradient
             name={item.cardName}
             issuerName={item.issuerName}
@@ -59,8 +105,12 @@ function RecommendationCard({ item }: { item: RecommendationItem }) {
             tier={item.cardTier as CardTier}
             imageUrl={item.cardImageThumbnailUrl}
             compact
-            className="h-28 w-full"
+            className="h-32 w-full"
           />
+          {/* Rank badge overlaid on card visual */}
+          <div className="absolute top-6 left-6">
+            <RankBadge rank={displayRank} />
+          </div>
         </div>
 
         {/* Info */}
@@ -72,7 +122,7 @@ function RecommendationCard({ item }: { item: RecommendationItem }) {
             </div>
             <div className="text-right shrink-0">
               <p className="font-body text-xs text-on-surface-variant">Match Score</p>
-              <p className="font-headline font-bold text-primary">{Math.round(item.matchScore)}</p>
+              <p className="font-headline font-bold text-primary">{Math.round(item.matchScore)}/100</p>
             </div>
           </div>
 
@@ -80,20 +130,24 @@ function RecommendationCard({ item }: { item: RecommendationItem }) {
 
           {/* Metrics */}
           <div className="grid grid-cols-3 gap-3 mt-3 mb-3">
-            <div>
-              <p className="font-body text-xs text-on-surface-variant">Annual Fee</p>
+            <div className="bg-surface-container-low rounded-xl p-2.5 text-center">
+              <p className="font-body text-xs text-on-surface-variant mb-0.5">Annual Fee</p>
               <p className="font-headline font-bold text-on-surface text-sm">
-                {item.annualFee === 0 ? 'FREE' : formatInr(item.annualFee)}
+                {item.annualFee === 0 ? (
+                  <span className="text-secondary">FREE</span>
+                ) : (
+                  formatInr(item.annualFee)
+                )}
               </p>
             </div>
-            <div>
-              <p className="font-body text-xs text-on-surface-variant">Effective Rate</p>
+            <div className="bg-surface-container-low rounded-xl p-2.5 text-center">
+              <p className="font-body text-xs text-on-surface-variant mb-0.5">Eff. Rate</p>
               <p className="font-headline font-bold text-primary text-sm">
                 {item.effectiveRewardRate.toFixed(2)}%
               </p>
             </div>
-            <div>
-              <p className="font-body text-xs text-on-surface-variant">Net Value</p>
+            <div className="bg-surface-container-low rounded-xl p-2.5 text-center">
+              <p className="font-body text-xs text-on-surface-variant mb-0.5">Net Value</p>
               <p
                 className={clsx(
                   'font-headline font-bold text-sm',
@@ -106,10 +160,17 @@ function RecommendationCard({ item }: { item: RecommendationItem }) {
             </div>
           </div>
 
-          {/* Explanation */}
-          <p className="font-body text-xs text-on-surface-variant mb-3 line-clamp-2">
-            {item.highlightBenefit ?? ""}
-          </p>
+          {/* Why this card */}
+          {item.highlightBenefit && (
+            <div className="flex items-start gap-1.5 mb-3">
+              <span className="material-symbols-outlined text-primary text-sm shrink-0 mt-0.5">
+                lightbulb
+              </span>
+              <p className="font-body text-xs text-on-surface-variant leading-relaxed line-clamp-2">
+                {item.highlightBenefit}
+              </p>
+            </div>
+          )}
 
           {/* Tags + CTA */}
           <div className="flex flex-wrap items-center justify-between gap-3 mt-auto">
@@ -125,19 +186,18 @@ function RecommendationCard({ item }: { item: RecommendationItem }) {
             </div>
             <div className="flex gap-2">
               <Link
-                href={`/cards/${item.cardId}`}
+                href={`/cards/${item.cardSlug}`}
                 className="btn-outlined text-xs py-1.5 px-3"
               >
                 View Details
               </Link>
-              <a
-                href="#apply"
-                onClick={(e) => e.preventDefault()}
+              <Link
+                href={`/cards/${item.cardSlug}`}
                 className="btn-primary text-xs py-1.5 px-3 flex items-center gap-1"
               >
                 Apply Now
                 <span className="material-symbols-outlined text-sm">open_in_new</span>
-              </a>
+              </Link>
             </div>
           </div>
         </div>
@@ -150,13 +210,13 @@ function SkeletonCard() {
   return (
     <div className="card-surface p-4">
       <div className="flex gap-4">
-        <div className="skeleton w-44 h-28 rounded-xl shrink-0" />
+        <div className="skeleton w-44 h-32 rounded-xl shrink-0" />
         <div className="flex-1 space-y-3">
           <div className="skeleton h-5 w-2/3 rounded" />
           <div className="skeleton h-3 w-1/2 rounded" />
           <div className="skeleton h-2 rounded-full" />
           <div className="grid grid-cols-3 gap-3">
-            {[1, 2, 3].map((i) => <div key={i} className="skeleton h-8 rounded" />)}
+            {[1, 2, 3].map((i) => <div key={i} className="skeleton h-12 rounded-xl" />)}
           </div>
         </div>
       </div>
@@ -169,24 +229,28 @@ export default function RecommendationsPage() {
   const searchParams = useSearchParams();
   const setId = params?.setId as string | undefined;
   const profileId = searchParams.get('profileId') ?? undefined;
+
   const [filterCategory, setFilterCategory] = useState<FilterCategory>('ALL');
   const [feeMax, setFeeMax] = useState(20000);
   const [selectedRewardTypes, setSelectedRewardTypes] = useState<RewardType[]>([]);
+  const [sortBy, setSortBy] = useState<SortBy>('rank');
 
   const { data, isLoading, error } = useQuery({
-    queryKey: ['recommendations', setId ?? 'latest', profileId],
+    queryKey: ['recommendations', setId ?? 'latest', profileId, sortBy],
     queryFn: () =>
-      setId ? recommendationsApi.getById(setId) : recommendationsApi.getLatest(profileId),
+      setId
+        ? recommendationsApi.getById(setId, sortBy)
+        : recommendationsApi.getLatest(profileId, sortBy),
     retry: false,
   });
 
   const FILTER_CATEGORIES: { id: FilterCategory; label: string }[] = [
-    { id: 'ALL', label: 'All' },
+    { id: 'ALL',      label: 'All' },
     { id: 'CASHBACK', label: 'Cashback' },
-    { id: 'POINTS', label: 'Reward Points' },
-    { id: 'MILES', label: 'Air Miles' },
-    { id: 'TRAVEL', label: 'Travel' },
-    { id: 'PREMIUM', label: 'Premium' },
+    { id: 'POINTS',   label: 'Reward Points' },
+    { id: 'MILES',    label: 'Air Miles' },
+    { id: 'TRAVEL',   label: 'Travel' },
+    { id: 'PREMIUM',  label: 'Premium' },
   ];
 
   const allRewardTypes: RewardType[] = ['CASHBACK', 'POINTS', 'MILES'];
@@ -198,13 +262,20 @@ export default function RecommendationsPage() {
           if (!item.recommendationTags?.some((t) => t.toLowerCase().includes('travel'))) return false;
         } else if (filterCategory === 'PREMIUM') {
           if (!['PREMIUM', 'ELITE', 'SUPER_PREMIUM'].includes(item.cardTier)) return false;
-        } else if (filterCategory === 'CASHBACK' || filterCategory === 'POINTS' || filterCategory === 'MILES') {
-          if (!item.recommendationTags?.some((t) => t.toUpperCase().includes(filterCategory))) return false;
+        } else if (
+          filterCategory === 'CASHBACK' ||
+          filterCategory === 'POINTS' ||
+          filterCategory === 'MILES'
+        ) {
+          if (!item.recommendationTags?.some((t) => t.toUpperCase().includes(filterCategory)))
+            return false;
         }
       }
       if (item.annualFee > feeMax) return false;
       return true;
     }) ?? [];
+
+  const displayItems = sortItems(filteredItems, sortBy);
 
   const toggleRewardType = (type: RewardType) => {
     setSelectedRewardTypes((prev) =>
@@ -218,10 +289,10 @@ export default function RecommendationsPage() {
         {/* Header */}
         <div className="mb-6">
           <h1 className="font-headline font-bold text-3xl text-on-surface mb-2">
-            Your Curated Selections
+            Your Curated Recommendations
           </h1>
           <p className="font-body text-on-surface-variant">
-            Personalized credit card recommendations based on your spending profile.
+            Personalized credit card picks ranked by fit for your spending profile.
           </p>
         </div>
 
@@ -310,10 +381,7 @@ export default function RecommendationsPage() {
                   </p>
                   <div className="space-y-2">
                     {allRewardTypes.map((type) => (
-                      <label
-                        key={type}
-                        className="flex items-center gap-2.5 cursor-pointer group"
-                      >
+                      <label key={type} className="flex items-center gap-2.5 cursor-pointer group">
                         <input
                           type="checkbox"
                           checked={selectedRewardTypes.includes(type)}
@@ -337,7 +405,11 @@ export default function RecommendationsPage() {
                     Update your spending profile for more accurate recommendations.
                   </p>
                   <Link
-                    href={profileId ? `/expense-profiler?profileId=${profileId}` : '/expense-profiler'}
+                    href={
+                      profileId
+                        ? `/expense-profiler?profileId=${profileId}`
+                        : '/expense-profiler'
+                    }
                     className="font-body text-xs text-primary font-semibold hover:underline"
                   >
                     Update Profile →
@@ -348,34 +420,65 @@ export default function RecommendationsPage() {
 
             {/* Results */}
             <div className="flex-1 min-w-0">
-              {/* Count */}
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-2">
-                  <span className="font-body text-sm text-on-surface-variant">
-                    {isLoading ? 'Loading...' : `${filteredItems.length} cards found`}
-                  </span>
-                  {data && (
-                    <span className="bg-primary-fixed/30 text-primary text-xs font-semibold px-2 py-0.5 rounded-full">
-                      {filteredItems.length}
-                    </span>
-                  )}
+              {/* Sort + count row */}
+              <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+                <span className="font-body text-sm text-on-surface-variant">
+                  {isLoading ? 'Loading...' : `${displayItems.length} card${displayItems.length !== 1 ? 's' : ''} found`}
+                </span>
+
+                {/* Sort tabs */}
+                <div className="flex items-center gap-1 bg-surface-container rounded-xl p-1">
+                  {SORT_OPTIONS.map((opt) => (
+                    <button
+                      key={opt.id}
+                      onClick={() => setSortBy(opt.id)}
+                      className={clsx(
+                        'flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-body text-xs font-semibold transition-colors whitespace-nowrap',
+                        sortBy === opt.id
+                          ? 'bg-surface text-primary shadow-sm'
+                          : 'text-on-surface-variant hover:text-on-surface'
+                      )}
+                    >
+                      <span className="material-symbols-outlined text-sm">{opt.icon}</span>
+                      <span className="hidden sm:inline">{opt.label}</span>
+                    </button>
+                  ))}
                 </div>
+
                 {data && (
-                  <p className="font-body text-xs text-on-surface-variant">
+                  <p className="font-body text-xs text-on-surface-variant hidden lg:block">
                     Generated {new Date(data.generatedAt).toLocaleDateString('en-IN')}
                   </p>
                 )}
               </div>
+
+              {/* Ranking explanation note */}
+              {!isLoading && displayItems.length > 0 && sortBy === 'rank' && (
+                <div className="flex items-start gap-2 bg-primary/5 border border-primary/10 rounded-xl px-4 py-2.5 mb-4">
+                  <span className="material-symbols-outlined text-primary text-sm shrink-0 mt-0.5">
+                    info
+                  </span>
+                  <p className="font-body text-xs text-on-surface-variant">
+                    Cards are ranked by <strong>match score</strong> — a composite of projected net
+                    annual value, reward rate alignment, and your spending categories. Switch to
+                    <strong> Highest Value</strong> to sort purely by net annual profit after fees.
+                  </p>
+                </div>
+              )}
 
               {/* Cards */}
               {isLoading ? (
                 <div className="space-y-4">
                   {[1, 2, 3].map((i) => <SkeletonCard key={i} />)}
                 </div>
-              ) : filteredItems.length > 0 ? (
+              ) : displayItems.length > 0 ? (
                 <div className="space-y-4">
-                  {filteredItems.map((item) => (
-                    <RecommendationCard key={item.id} item={item} />
+                  {displayItems.map((item, idx) => (
+                    <RecommendationCard
+                      key={item.id}
+                      item={item}
+                      displayRank={idx + 1}
+                    />
                   ))}
                 </div>
               ) : (
@@ -403,7 +506,7 @@ export default function RecommendationsPage() {
               )}
 
               {/* Summary row */}
-              {data && filteredItems.length > 0 && (
+              {data && displayItems.length > 0 && (
                 <div className="mt-6 bg-surface-container-low rounded-2xl p-5 border border-outline-variant">
                   <h3 className="font-headline font-bold text-base text-on-surface mb-3">
                     Potential Annual Value
@@ -412,28 +515,26 @@ export default function RecommendationsPage() {
                     <div>
                       <p className="font-body text-xs text-on-surface-variant mb-0.5">Top Card Value</p>
                       <p className="font-headline font-bold text-secondary">
-                        {formatInr(filteredItems[0]?.projectedAnnualValueInr ?? 0)}/yr
+                        {formatInr(displayItems[0]?.projectedAnnualValueInr ?? 0)}/yr
                       </p>
                     </div>
                     <div>
                       <p className="font-body text-xs text-on-surface-variant mb-0.5">Top Net Profit</p>
                       <p className="font-headline font-bold text-secondary">
-                        {formatInr(filteredItems[0]?.netAnnualProfitInr ?? 0)}/yr
+                        {formatInr(displayItems[0]?.netAnnualProfitInr ?? 0)}/yr
                       </p>
                     </div>
                     <div>
                       <p className="font-body text-xs text-on-surface-variant mb-0.5">Best Rate</p>
                       <p className="font-headline font-bold text-primary">
-                        {filteredItems.length > 0
-                          ? Math.max(...filteredItems.map((i) => i.effectiveRewardRate)).toFixed(2)
+                        {displayItems.length > 0
+                          ? Math.max(...displayItems.map((i) => i.effectiveRewardRate)).toFixed(2)
                           : '0.00'}%
                       </p>
                     </div>
                     <div>
                       <p className="font-body text-xs text-on-surface-variant mb-0.5">Cards Matched</p>
-                      <p className="font-headline font-bold text-on-surface">
-                        {filteredItems.length}
-                      </p>
+                      <p className="font-headline font-bold text-on-surface">{displayItems.length}</p>
                     </div>
                   </div>
                 </div>
