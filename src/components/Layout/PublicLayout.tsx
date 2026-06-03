@@ -2,7 +2,17 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
+import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '../../store/authStore';
+import { announcementsApi } from '../../api/announcements';
+
+const BG_GRADIENT: Record<string, string> = {
+  amber:  'bg-gradient-to-r from-amber-500 to-orange-500',
+  blue:   'bg-gradient-to-r from-blue-600 to-indigo-600',
+  green:  'bg-gradient-to-r from-emerald-500 to-teal-600',
+  red:    'bg-gradient-to-r from-red-500 to-rose-600',
+  purple: 'bg-gradient-to-r from-purple-600 to-violet-600',
+};
 
 interface PublicLayoutProps {
   children: React.ReactNode;
@@ -12,6 +22,12 @@ export default function PublicLayout({ children }: PublicLayoutProps) {
   const { state, logout } = useAuth();
   const pathname = usePathname();
   const router = useRouter();
+
+  const { data: announcement } = useQuery({
+    queryKey: ['announcement-active'],
+    queryFn: announcementsApi.getActive,
+    staleTime: 5 * 60 * 1000,
+  });
 
   const handleLogout = async () => {
     await logout();
@@ -29,6 +45,45 @@ export default function PublicLayout({ children }: PublicLayoutProps) {
 
   return (
     <div className="min-h-screen bg-surface flex flex-col">
+      {/* Announcement bar — full bar is clickable, navigates to announcement href */}
+      {announcement && (
+        announcement.external ? (
+          <a
+            href={announcement.href}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={`block ${BG_GRADIENT[announcement.bgColor ?? 'amber'] ?? BG_GRADIENT.amber} text-white hover:brightness-95 transition-[filter] duration-150 cursor-pointer`}
+          >
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2 flex items-center justify-center gap-3">
+              <span className="material-symbols-outlined text-base shrink-0">campaign</span>
+              {announcement.badge && (
+                <span className="bg-white/20 text-white text-xs font-semibold px-2 py-0.5 rounded-full shrink-0 hidden sm:inline">
+                  {announcement.badge}
+                </span>
+              )}
+              <p className="font-body text-sm text-center line-clamp-1">{announcement.text}</p>
+              <span className="material-symbols-outlined text-sm shrink-0 hidden sm:inline">open_in_new</span>
+            </div>
+          </a>
+        ) : (
+          <Link
+            href={announcement.href}
+            className={`block ${BG_GRADIENT[announcement.bgColor ?? 'amber'] ?? BG_GRADIENT.amber} text-white hover:brightness-95 transition-[filter] duration-150 cursor-pointer`}
+          >
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2 flex items-center justify-center gap-3">
+              <span className="material-symbols-outlined text-base shrink-0">campaign</span>
+              {announcement.badge && (
+                <span className="bg-white/20 text-white text-xs font-semibold px-2 py-0.5 rounded-full shrink-0 hidden sm:inline">
+                  {announcement.badge}
+                </span>
+              )}
+              <p className="font-body text-sm text-center line-clamp-1">{announcement.text}</p>
+              <span className="material-symbols-outlined text-sm shrink-0 hidden sm:inline">arrow_forward</span>
+            </div>
+          </Link>
+        )
+      )}
+
       {/* Sticky navbar */}
       <header className="sticky top-0 z-50 bg-surface-container-lowest border-b border-outline-variant">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
