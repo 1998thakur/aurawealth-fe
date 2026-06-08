@@ -12,7 +12,7 @@ import { cardsApi } from '../../api/cards';
 import { expenseApi } from '../../api/expense';
 import { formatInr, formatNumber } from '../../utils/format';
 import type { CardDetail, CardTier, Category, RewardRule } from '../../types/cards';
-import { useSeoMeta, injectJsonLd, removeJsonLd } from '../../hooks/useSeoMeta';
+import { injectJsonLd, removeJsonLd } from '../../hooks/useSeoMeta';
 import { SITE_URL } from '../../config';
 
 type Tab = 'overview' | 'calculator' | 'profit';
@@ -328,53 +328,14 @@ export default function CardDetailPage() {
     }
   }, [activeProfile]);
 
-  useSeoMeta({
-    title: card
-      ? `${card.name} — Review, Rewards & Benefits | CreditBrain`
-      : 'Credit Card Details | CreditBrain',
-    description: card
-      ? `${card.name} by ${card.issuer.name}. Annual fee ₹${card.annualFee.toLocaleString('en-IN')}. ${card.tagline || 'Calculate your rewards and see if this card is right for your spending.'}`
-      : 'Detailed credit card review with rewards calculator.',
-    keywords: card
-      ? `${card.name}, ${card.issuer.name} credit card, ${card.name} review, ${card.name} rewards, ${card.name} benefits`
-      : undefined,
-    ogType: 'website',
-    canonical: card ? `${SITE_URL}/cards/${card.slug}` : undefined,
-    ogUrl: card ? `${SITE_URL}/cards/${card.slug}` : undefined,
-    ogImage: card?.cardImageUrl ?? undefined,
-  });
+  // SEO meta is handled server-side via generateMetadata in app/cards/[id]/page.tsx
+  // Do not inject duplicate meta tags from the client component.
 
+  // Breadcrumb + Product JSON-LD are injected server-side (app/cards/[id]/page.tsx).
+  // Only inject FAQ JSON-LD here as it depends on dynamic card data computed client-side.
   useEffect(() => {
     if (!card) return;
     const faqs = generateFAQs(card);
-    injectJsonLd('breadcrumb-card-detail', {
-      '@context': 'https://schema.org',
-      '@type': 'BreadcrumbList',
-      itemListElement: [
-        { '@type': 'ListItem', position: 1, name: 'Home', item: `${SITE_URL}/` },
-        { '@type': 'ListItem', position: 2, name: 'Credit Cards', item: `${SITE_URL}/cards` },
-        {
-          '@type': 'ListItem',
-          position: 3,
-          name: card.name,
-          item: `${SITE_URL}/cards/${card.slug}`,
-        },
-      ],
-    });
-    injectJsonLd('card-product', {
-      '@context': 'https://schema.org',
-      '@type': 'Product',
-      name: card.name,
-      description: card.tagline || `${card.name} credit card by ${card.issuer.name}`,
-      image: card.cardImageUrl,
-      brand: { '@type': 'Brand', name: card.issuer.name },
-      offers: {
-        '@type': 'Offer',
-        price: card.annualFee,
-        priceCurrency: 'INR',
-        availability: 'https://schema.org/InStock',
-      },
-    });
     injectJsonLd('card-faq', {
       '@context': 'https://schema.org',
       '@type': 'FAQPage',
@@ -385,8 +346,6 @@ export default function CardDetailPage() {
       })),
     });
     return () => {
-      removeJsonLd('breadcrumb-card-detail');
-      removeJsonLd('card-product');
       removeJsonLd('card-faq');
     };
   }, [card]);

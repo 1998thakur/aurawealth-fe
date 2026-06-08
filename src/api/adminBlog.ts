@@ -13,6 +13,7 @@ export interface CreateBlogPostRequest {
   authorName?: string;
   tags?: string[];
   category?: string;
+  postType?: string;
   featured?: boolean;
   status?: BlogStatus;
   metaTitle?: string;
