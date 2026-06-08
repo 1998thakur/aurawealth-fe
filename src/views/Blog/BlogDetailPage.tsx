@@ -1,25 +1,50 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import PublicLayout from '../../components/Layout/PublicLayout';
 import { blogApi } from '../../api/blog';
 import { useSeoMeta, injectJsonLd, removeJsonLd } from '../../hooks/useSeoMeta';
-import type { BlogSummary, FaqItem } from '../../types/blog';
+import type { BlogSummary, FaqItem, PostType } from '../../types/blog';
 import { SITE_URL } from '../../config';
 
 // ─── Gradient helper ──────────────────────────────────────────────────────────
 
 const CATEGORY_GRADIENTS: Record<string, string> = {
   Travel: 'from-blue-500 to-indigo-700',
-  Guide: 'from-emerald-500 to-teal-700',
-  Comparison: 'from-violet-500 to-purple-700',
+  Guides: 'from-emerald-500 to-teal-700',
+  Comparisons: 'from-violet-500 to-purple-700',
+  Cashback: 'from-orange-500 to-amber-600',
+  Rewards: 'from-yellow-500 to-orange-600',
+  'Best Cards': 'from-primary to-primary/60',
 };
 
 function getCategoryGradient(category?: string): string {
   return category ? (CATEGORY_GRADIENTS[category] ?? 'from-primary to-primary/60') : 'from-primary to-primary/60';
+}
+
+// ─── Post type config ─────────────────────────────────────────────────────────
+
+const POST_TYPE_CONFIG: Record<PostType, { label: string; icon: string; classes: string }> = {
+  listicle:   { label: 'List',        icon: 'format_list_numbered', classes: 'text-blue-700 bg-blue-100' },
+  comparison: { label: 'Comparison',  icon: 'compare_arrows',       classes: 'text-violet-700 bg-violet-100' },
+  guide:      { label: 'Guide',       icon: 'menu_book',             classes: 'text-emerald-700 bg-emerald-100' },
+  review:     { label: 'Review',      icon: 'rate_review',           classes: 'text-orange-700 bg-orange-100' },
+  calculator: { label: 'Calculator',  icon: 'calculate',             classes: 'text-teal-700 bg-teal-100' },
+  article:    { label: 'Article',     icon: 'article',               classes: 'text-slate-600 bg-slate-100' },
+};
+
+function PostTypeBadge({ postType }: { postType?: PostType }) {
+  if (!postType || postType === 'article') return null;
+  const cfg = POST_TYPE_CONFIG[postType] ?? POST_TYPE_CONFIG.article;
+  return (
+    <span className={`inline-flex items-center gap-1 text-xs font-semibold rounded-full px-2.5 py-0.5 ${cfg.classes}`}>
+      <span className="material-symbols-outlined text-xs">{cfg.icon}</span>
+      {cfg.label}
+    </span>
+  );
 }
 
 // ─── Date formatter ───────────────────────────────────────────────────────────
@@ -30,6 +55,81 @@ function formatDate(iso: string): string {
     day: 'numeric',
     year: 'numeric',
   });
+}
+
+// ─── Table of Contents ────────────────────────────────────────────────────────
+
+interface TocEntry {
+  id: string;
+  text: string;
+  level: number;
+}
+
+function parseToc(html: string): TocEntry[] {
+  const matches = Array.from(html.matchAll(/<h([23])[^>]*(?:id="([^"]*)")?[^>]*>(.*?)<\/h[23]>/gi));
+  return matches.map((m, idx) => {
+    const level = parseInt(m[1], 10);
+    const text = m[3].replace(/<[^>]+>/g, '').trim();
+    const id = m[2] || `toc-heading-${idx}`;
+    return { id, text, level };
+  });
+}
+
+function TableOfContents({ entries, activeId }: { entries: TocEntry[]; activeId: string }) {
+  if (entries.length < 3) return null;
+  return (
+    <nav className="rounded-xl border border-outline-variant bg-surface-container p-5 mb-8">
+      <p className="font-headline font-bold text-sm text-on-surface mb-3 flex items-center gap-2">
+        <span className="material-symbols-outlined text-base text-primary">list</span>
+        Table of Contents
+      </p>
+      <ol className="space-y-1.5">
+        {entries.map((entry) => (
+          <li key={entry.id} className={entry.level === 3 ? 'pl-4' : ''}>
+            <a
+              href={`#${entry.id}`}
+              className={`font-body text-sm transition-colors hover:text-primary ${
+                activeId === entry.id ? 'text-primary font-medium' : 'text-on-surface-variant'
+              }`}
+            >
+              {entry.text}
+            </a>
+          </li>
+        ))}
+      </ol>
+    </nav>
+  );
+}
+
+// ─── Key Takeaways box (for listicle / guide) ─────────────────────────────────
+
+function KeyTakeaways({ items }: { items: string[] }) {
+  if (items.length === 0) return null;
+  return (
+    <div className="rounded-xl border border-primary/30 bg-primary/5 p-5 mb-8">
+      <p className="font-headline font-bold text-sm text-primary mb-3 flex items-center gap-2">
+        <span className="material-symbols-outlined text-base">lightbulb</span>
+        Key Takeaways
+      </p>
+      <ul className="space-y-2">
+        {items.map((item, i) => (
+          <li key={i} className="flex items-start gap-2 font-body text-sm text-on-surface-variant">
+            <span className="material-symbols-outlined text-primary text-sm mt-0.5 shrink-0">check_circle</span>
+            {item}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+/** Extract first 5 <li> texts from HTML (used as key takeaways for listicle/guide posts) */
+function extractListItems(html: string, max = 5): string[] {
+  const matches = Array.from(html.matchAll(/<li[^>]*>(.*?)<\/li>/gi));
+  return matches
+    .slice(0, max)
+    .map((m) => m[1].replace(/<[^>]+>/g, '').trim())
+    .filter(Boolean);
 }
 
 // ─── Skeletons ────────────────────────────────────────────────────────────────
@@ -70,11 +170,13 @@ function RelatedCard({ post }: { post: BlogSummary }) {
         <div className={`w-full h-36 bg-gradient-to-br ${gradient}`} />
       )}
       <div className="p-4 flex flex-col flex-1">
-        {post.category && (
-          <span className="inline-block text-xs font-semibold uppercase tracking-wide text-primary bg-primary-fixed/30 rounded-full px-2.5 py-0.5 mb-2 self-start">
-            {post.category}
-          </span>
-        )}
+        <div className="flex items-center gap-1.5 mb-2 flex-wrap">
+          {post.category && (
+            <span className="inline-block text-xs font-semibold uppercase tracking-wide text-primary bg-primary-fixed/30 rounded-full px-2.5 py-0.5">
+              {post.category}
+            </span>
+          )}
+        </div>
         <h3 className="font-headline font-bold text-on-surface text-sm leading-snug line-clamp-2 group-hover:text-primary transition-colors mb-2">
           {post.title}
         </h3>
@@ -90,6 +192,7 @@ export default function BlogDetailPage() {
   const params = useParams();
   const slug = params?.slug as string | undefined;
   const router = useRouter();
+  const [activeHeadingId, setActiveHeadingId] = useState('');
 
   const { data: post, isLoading, isError } = useQuery({
     queryKey: ['blog', 'post', slug],
@@ -105,6 +208,32 @@ export default function BlogDetailPage() {
       router.replace('/blog');
     }
   }, [isError, router]);
+
+  // Parse TOC from content
+  const tocEntries = useMemo(() => (post ? parseToc(post.content) : []), [post]);
+
+  // Track active heading via IntersectionObserver
+  useEffect(() => {
+    if (tocEntries.length < 3) return;
+    const observers: IntersectionObserver[] = [];
+    tocEntries.forEach(({ id }) => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      const obs = new IntersectionObserver(
+        ([entry]) => { if (entry.isIntersecting) setActiveHeadingId(id); },
+        { rootMargin: '-20% 0px -70% 0px' }
+      );
+      obs.observe(el);
+      observers.push(obs);
+    });
+    return () => observers.forEach((o) => o.disconnect());
+  }, [tocEntries]);
+
+  // Key takeaways for listicle / guide posts
+  const keyTakeaways = useMemo(() => {
+    if (!post || !['listicle', 'guide'].includes(post.postType ?? '')) return [];
+    return extractListItems(post.content);
+  }, [post]);
 
   const postUrl = post ? `${SITE_URL}/blog/${post.slug}` : undefined;
 
@@ -190,7 +319,7 @@ export default function BlogDetailPage() {
     return () => removeJsonLd('breadcrumb');
   }, [post]);
 
-  // FAQPage JSON-LD (only when post has FAQ items)
+  // FAQPage JSON-LD
   useEffect(() => {
     if (!post?.faqItems?.length) return;
     injectJsonLd('faq', {
@@ -212,10 +341,12 @@ export default function BlogDetailPage() {
   if (!post) return null;
 
   const gradient = getCategoryGradient(post.category);
+  const postTypeCfg = post.postType ? (POST_TYPE_CONFIG[post.postType] ?? null) : null;
+  const hasToc = tocEntries.length >= 3;
 
   return (
     <PublicLayout>
-      {/* Cover image */}
+      {/* Cover image / gradient hero */}
       {post.coverImageUrl ? (
         <div className="w-full aspect-video max-h-96 overflow-hidden">
           <img
@@ -225,7 +356,16 @@ export default function BlogDetailPage() {
           />
         </div>
       ) : (
-        <div className={`w-full h-64 md:h-80 bg-gradient-to-br ${gradient}`} />
+        <div className={`w-full h-52 md:h-72 bg-gradient-to-br ${gradient} flex items-end`}>
+          {postTypeCfg && (
+            <div className="max-w-4xl mx-auto w-full px-4 sm:px-6 lg:px-8 pb-6">
+              <span className={`inline-flex items-center gap-1.5 text-sm font-semibold rounded-full px-3 py-1 ${postTypeCfg.classes}`}>
+                <span className="material-symbols-outlined text-sm">{postTypeCfg.icon}</span>
+                {postTypeCfg.label}
+              </span>
+            </div>
+          )}
+        </div>
       )}
 
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
@@ -252,11 +392,14 @@ export default function BlogDetailPage() {
 
         {/* Article header */}
         <header className="mb-8">
-          {post.category && (
-            <span className="inline-block text-xs font-semibold uppercase tracking-wide text-primary bg-primary-fixed/30 rounded-full px-2.5 py-0.5 mb-4">
-              {post.category}
-            </span>
-          )}
+          <div className="flex items-center gap-2 mb-4 flex-wrap">
+            {post.category && (
+              <span className="inline-block text-xs font-semibold uppercase tracking-wide text-primary bg-primary-fixed/30 rounded-full px-2.5 py-0.5">
+                {post.category}
+              </span>
+            )}
+            <PostTypeBadge postType={post.postType} />
+          </div>
           <h1 className="font-headline font-bold text-3xl md:text-4xl text-on-surface leading-tight mb-4">
             {post.title}
           </h1>
@@ -285,6 +428,16 @@ export default function BlogDetailPage() {
             </span>
           </div>
         </header>
+
+        {/* Table of Contents */}
+        {hasToc && (
+          <TableOfContents entries={tocEntries} activeId={activeHeadingId} />
+        )}
+
+        {/* Key takeaways for listicle / guide */}
+        {keyTakeaways.length > 0 && (
+          <KeyTakeaways items={keyTakeaways} />
+        )}
 
         {/* Article body */}
         <article

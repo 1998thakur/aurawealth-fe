@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
 import PublicLayout from '../../components/Layout/PublicLayout';
 import { blogApi } from '../../api/blog';
-import type { BlogSummary } from '../../types/blog';
+import type { BlogSummary, PostType } from '../../types/blog';
 import { useSeoMeta, injectJsonLd, removeJsonLd } from '../../hooks/useSeoMeta';
 import { SITE_URL } from '../../config';
 
@@ -27,9 +27,9 @@ const CATEGORY_META: Record<Category, CategoryMeta> = {
     keywords: 'credit card blog India, credit card tips India, best credit card guides, reward points tips, credit card cashback tips, travel card India guide',
   },
   'Best Cards': {
-    title: 'Best Credit Cards in India 2025 — CreditBrain',
+    title: 'Best Credit Cards in India 2026 — CreditBrain',
     description: 'Curated lists of the best credit cards in India for every need — shopping, travel, fuel, dining, and more. Updated monthly.',
-    keywords: 'best credit card India 2025, top credit cards India, best credit card for online shopping India, lifetime free credit card India',
+    keywords: 'best credit card India 2026, top credit cards India, best credit card for online shopping India, lifetime free credit card India',
   },
   'Cashback': {
     title: 'Best Cashback Credit Cards India — CreditBrain',
@@ -64,7 +64,7 @@ const CATEGORY_META: Record<Category, CategoryMeta> = {
   'News': {
     title: 'Credit Card News India — New Launches & Fee Changes — CreditBrain',
     description: 'Latest credit card news in India — new card launches, reward programme changes, bank fee revisions, and industry updates.',
-    keywords: 'new credit card launch India 2025, credit card fee revision, credit card reward programme change India, credit card news India',
+    keywords: 'new credit card launch India 2026, credit card fee revision, credit card reward programme change India, credit card news India',
   },
 };
 
@@ -81,6 +81,28 @@ const CATEGORY_GRADIENTS: Record<string, string> = {
 
 function getCategoryGradient(category?: string): string {
   return category ? (CATEGORY_GRADIENTS[category] ?? 'from-primary to-primary/60') : 'from-primary to-primary/60';
+}
+
+// ─── Post type badge ───────────────────────────────────────────────────────────
+
+const POST_TYPE_CONFIG: Record<PostType, { label: string; icon: string; classes: string }> = {
+  listicle:   { label: 'List',        icon: 'format_list_numbered', classes: 'text-blue-700 bg-blue-100' },
+  comparison: { label: 'Comparison',  icon: 'compare_arrows',       classes: 'text-violet-700 bg-violet-100' },
+  guide:      { label: 'Guide',       icon: 'menu_book',             classes: 'text-emerald-700 bg-emerald-100' },
+  review:     { label: 'Review',      icon: 'rate_review',           classes: 'text-orange-700 bg-orange-100' },
+  calculator: { label: 'Calculator',  icon: 'calculate',             classes: 'text-teal-700 bg-teal-100' },
+  article:    { label: 'Article',     icon: 'article',               classes: 'text-slate-600 bg-slate-100' },
+};
+
+function PostTypeBadge({ postType }: { postType?: PostType }) {
+  if (!postType || postType === 'article') return null;
+  const cfg = POST_TYPE_CONFIG[postType] ?? POST_TYPE_CONFIG.article;
+  return (
+    <span className={`inline-flex items-center gap-1 text-xs font-semibold rounded-full px-2 py-0.5 ${cfg.classes}`}>
+      <span className="material-symbols-outlined text-xs">{cfg.icon}</span>
+      {cfg.label}
+    </span>
+  );
 }
 
 // ─── Date formatter ───────────────────────────────────────────────────────────
@@ -139,11 +161,14 @@ function BlogCard({ post }: { post: BlogSummary }) {
 
       {/* Body */}
       <div className="p-5 flex flex-col flex-1">
-        {post.category && (
-          <span className="inline-block text-xs font-semibold uppercase tracking-wide text-primary bg-primary-fixed/30 rounded-full px-2.5 py-0.5 mb-3 self-start">
-            {post.category}
-          </span>
-        )}
+        <div className="flex items-center gap-2 mb-3 flex-wrap">
+          {post.category && (
+            <span className="inline-block text-xs font-semibold uppercase tracking-wide text-primary bg-primary-fixed/30 rounded-full px-2.5 py-0.5">
+              {post.category}
+            </span>
+          )}
+          <PostTypeBadge postType={post.postType} />
+        </div>
         <h3 className="font-headline font-bold text-on-surface text-base leading-snug mb-2 line-clamp-2 group-hover:text-primary transition-colors">
           {post.title}
         </h3>
@@ -184,12 +209,13 @@ function FeaturedCard({ post }: { post: BlogSummary }) {
         </div>
       )}
       <div className="p-6 flex flex-col flex-1">
-        <div className="flex items-center gap-2 mb-3">
+        <div className="flex items-center gap-2 mb-3 flex-wrap">
           {post.category && (
             <span className="inline-block text-xs font-semibold uppercase tracking-wide text-primary bg-primary-fixed/30 rounded-full px-2.5 py-0.5">
               {post.category}
             </span>
           )}
+          <PostTypeBadge postType={post.postType} />
           <span className="inline-flex items-center gap-1 text-xs font-semibold text-amber-700 bg-amber-100 rounded-full px-2.5 py-0.5">
             <span className="material-symbols-outlined text-xs">star</span> Featured
           </span>
@@ -269,7 +295,7 @@ export default function BlogListPage() {
     staleTime: 5 * 60 * 1000,
   });
 
-  // Accumulate posts from query data (handles both fresh fetches and cached hits)
+  // Accumulate posts from query data
   useEffect(() => {
     if (!postsPage) return;
     if (page === 0) {
@@ -280,7 +306,6 @@ export default function BlogListPage() {
   }, [postsPage, page]);
 
   function handleCategoryChange(cat: Category) {
-    // Clicking the active non-All category deselects it (goes back to All)
     const next: Category = activeCategory === cat && cat !== 'All' ? 'All' : cat;
     if (next === activeCategory) return;
     setActiveCategory(next);
@@ -308,6 +333,17 @@ export default function BlogListPage() {
           <p className="font-body text-lg text-on-surface-variant max-w-2xl mx-auto">
             Expert guides, card comparisons, and tips to help you earn more rewards on every rupee you spend in India.
           </p>
+          {/* Post type legend */}
+          <div className="flex flex-wrap items-center justify-center gap-2 mt-6">
+            {(Object.entries(POST_TYPE_CONFIG) as [PostType, typeof POST_TYPE_CONFIG[PostType]][])
+              .filter(([t]) => t !== 'article')
+              .map(([type, cfg]) => (
+                <span key={type} className={`inline-flex items-center gap-1 text-xs font-semibold rounded-full px-2.5 py-1 ${cfg.classes}`}>
+                  <span className="material-symbols-outlined text-xs">{cfg.icon}</span>
+                  {cfg.label}
+                </span>
+              ))}
+          </div>
         </div>
       </section>
 

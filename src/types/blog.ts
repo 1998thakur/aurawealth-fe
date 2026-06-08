@@ -1,3 +1,5 @@
+export type PostType = 'listicle' | 'comparison' | 'guide' | 'review' | 'calculator' | 'article';
+
 export interface FaqItem {
   question: string;
   answer: string;
@@ -12,6 +14,7 @@ export interface BlogSummary {
   authorName: string;
   tags: string[];
   category?: string;
+  postType?: PostType;
   featured: boolean;
   readingTimeMin: number;
   publishedAt: string;
