@@ -2,11 +2,11 @@
   "rewrites": [
     {
       "source": "/api/:path*",
-      "destination": "https://aurawealth-backend-production-1556.up.railway.app/api/:path*"
+      "destination": "https://aurawealth-backend-production-2faa.up.railway.app/api/:path*"
     },
     {
       "source": "/sitemap.xml",
-      "destination": "https://aurawealth-backend-production-1556.up.railway.app/sitemap.xml"
+      "destination": "https://aurawealth-backend-production-2faa.up.railway.app/sitemap.xml"
     }
   ]
 }
