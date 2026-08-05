@@ -7,7 +7,7 @@ import { useQuery } from '@tanstack/react-query';
 import PublicLayout from '../../components/Layout/PublicLayout';
 import { blogApi } from '../../api/blog';
 import { useSeoMeta, injectJsonLd, removeJsonLd } from '../../hooks/useSeoMeta';
-import type { BlogSummary, FaqItem, PostType } from '../../types/blog';
+import type { BlogDetail, BlogSummary, FaqItem, PostType } from '../../types/blog';
 import { SITE_URL } from '../../config';
 
 // ─── Gradient helper ──────────────────────────────────────────────────────────
@@ -188,26 +188,33 @@ function RelatedCard({ post }: { post: BlogSummary }) {
 
 // ─── Main page ────────────────────────────────────────────────────────────────
 
-export default function BlogDetailPage() {
+interface BlogDetailPageProps {
+  serverPost?: BlogDetail;
+}
+
+export default function BlogDetailPage({ serverPost }: BlogDetailPageProps) {
   const params = useParams();
   const slug = params?.slug as string | undefined;
   const router = useRouter();
   const [activeHeadingId, setActiveHeadingId] = useState('');
 
-  const { data: post, isLoading, isError } = useQuery({
+  const { data: clientPost, isLoading, isError } = useQuery({
     queryKey: ['blog', 'post', slug],
     queryFn: () => blogApi.getPost(slug!),
-    enabled: !!slug,
+    enabled: !!slug && !serverPost,
     retry: false,
     staleTime: 10 * 60 * 1000,
+    initialData: serverPost,
   });
+
+  const post = serverPost ?? clientPost;
 
   // Redirect on 404
   useEffect(() => {
-    if (isError) {
+    if (isError && !serverPost) {
       router.replace('/blog');
     }
-  }, [isError, router]);
+  }, [isError, serverPost, router]);
 
   // Parse TOC from content
   const tocEntries = useMemo(() => (post ? parseToc(post.content) : []), [post]);
@@ -428,6 +435,7 @@ export default function BlogDetailPage() {
             </span>
           </div>
         </header>
+
 
         {/* Table of Contents */}
         {hasToc && (

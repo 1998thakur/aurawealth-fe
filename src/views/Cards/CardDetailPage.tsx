@@ -17,6 +17,7 @@ import { SITE_URL } from '../../config';
 
 type Tab = 'overview' | 'calculator' | 'profit';
 
+
 const TIER_BADGES: Record<CardTier, string> = {
   ENTRY: 'tier-badge-entry',
   STANDARD: 'tier-badge-standard',
@@ -619,6 +620,7 @@ export default function CardDetailPage() {
                 </div>
               )}
             </div>
+
 
             {/* Pros & Cons */}
             {(pros.length > 0 || cons.length > 0) && (

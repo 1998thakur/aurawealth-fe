@@ -1,5 +1,8 @@
 import type { Metadata } from 'next';
 import BlogListPage from '../../src/views/Blog/BlogListPage';
+import { listPosts, getFeaturedPosts } from '../../src/lib/blog-queries';
+
+export const revalidate = 300; // ISR: revalidate every 5 minutes
 
 export const metadata: Metadata = {
   title: { absolute: 'Credit Card Tips, Guides & Comparisons — CreditBrain Blog' },
@@ -19,6 +22,11 @@ export const metadata: Metadata = {
   },
 };
 
-export default function Page() {
-  return <BlogListPage />;
+export default async function Page() {
+  const [{ items: posts }, featured] = await Promise.all([
+    listPosts(0, 9),
+    getFeaturedPosts(),
+  ]);
+
+  return <BlogListPage serverPosts={posts} serverFeatured={featured} />;
 }

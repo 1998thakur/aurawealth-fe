@@ -240,10 +240,15 @@ function FeaturedCard({ post }: { post: BlogSummary }) {
 
 // ─── Main page ────────────────────────────────────────────────────────────────
 
-export default function BlogListPage() {
+interface BlogListPageProps {
+  serverPosts?: BlogSummary[];
+  serverFeatured?: BlogSummary[];
+}
+
+export default function BlogListPage({ serverPosts, serverFeatured }: BlogListPageProps) {
   const [activeCategory, setActiveCategory] = useState<Category>('All');
   const [page, setPage] = useState(0);
-  const [allPosts, setAllPosts] = useState<BlogSummary[]>([]);
+  const [allPosts, setAllPosts] = useState<BlogSummary[]>(serverPosts ?? []);
 
   const meta = CATEGORY_META[activeCategory];
   const canonicalUrl = activeCategory === 'All'
@@ -265,6 +270,8 @@ export default function BlogListPage() {
   const { data: featuredPosts } = useQuery({
     queryKey: ['blog', 'featured'],
     queryFn: () => blogApi.getFeatured(),
+    enabled: !serverFeatured,
+    initialData: serverFeatured,
     staleTime: 5 * 60 * 1000,
   });
 
@@ -292,6 +299,7 @@ export default function BlogListPage() {
   const { data: postsPage, isLoading, isFetching } = useQuery({
     queryKey: ['blog', 'list', categoryParam, page],
     queryFn: () => blogApi.getPosts({ page, size: 9, category: categoryParam }),
+    enabled: !(page === 0 && !categoryParam && serverPosts),
     staleTime: 5 * 60 * 1000,
   });
 

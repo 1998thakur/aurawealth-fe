@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.109.0",
     "@tanstack/react-query": "^5.51.0",
     "@tiptap/extension-character-count": "^3.22.5",
     "@tiptap/extension-link": "^3.22.5",
