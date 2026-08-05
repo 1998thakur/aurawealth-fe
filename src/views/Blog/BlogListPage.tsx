@@ -4,10 +4,32 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
 import PublicLayout from '../../components/Layout/PublicLayout';
-import { blogApi } from '../../api/blog';
 import type { BlogSummary, PostType } from '../../types/blog';
 import { useSeoMeta, injectJsonLd, removeJsonLd } from '../../hooks/useSeoMeta';
 import { SITE_URL } from '../../config';
+
+// ─── Client-side blog fetchers (via Next.js API proxy → backend) ─────────────
+
+async function fetchPosts(
+  page: number,
+  size: number,
+  category?: string,
+): Promise<{ items: BlogSummary[]; hasMore: boolean; total: number }> {
+  const sp = new URLSearchParams({ page: String(page), size: String(size) });
+  if (category) sp.set('category', category);
+  const res = await fetch(`/api/v1/blog?${sp}`);
+  if (!res.ok) return { items: [], hasMore: false, total: 0 };
+  const json = await res.json();
+  const data = json.data ?? json;
+  return { items: data.items ?? [], hasMore: data.hasMore ?? false, total: data.total ?? 0 };
+}
+
+async function fetchFeatured(): Promise<BlogSummary[]> {
+  const res = await fetch('/api/v1/blog/featured');
+  if (!res.ok) return [];
+  const json = await res.json();
+  return json.data ?? json;
+}
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -269,8 +291,8 @@ export default function BlogListPage({ serverPosts, serverFeatured }: BlogListPa
   // Featured posts
   const { data: featuredPosts } = useQuery({
     queryKey: ['blog', 'featured'],
-    queryFn: () => blogApi.getFeatured(),
-    enabled: !serverFeatured,
+    queryFn: () => fetchFeatured(),
+    enabled: !serverFeatured?.length,
     initialData: serverFeatured,
     staleTime: 5 * 60 * 1000,
   });
@@ -295,11 +317,11 @@ export default function BlogListPage({ serverPosts, serverFeatured }: BlogListPa
     return () => removeJsonLd('blog-list');
   }, [allPosts, featuredPosts, meta, canonicalUrl]);
 
-  // Paginated list
+  // Paginated list — disabled for page 0 (no category) when server already provided data
   const { data: postsPage, isLoading, isFetching } = useQuery({
     queryKey: ['blog', 'list', categoryParam, page],
-    queryFn: () => blogApi.getPosts({ page, size: 9, category: categoryParam }),
-    enabled: !(page === 0 && !categoryParam && serverPosts),
+    queryFn: () => fetchPosts(page, 9, categoryParam),
+    enabled: !(page === 0 && !categoryParam && !!serverPosts?.length),
     staleTime: 5 * 60 * 1000,
   });
 
@@ -325,7 +347,7 @@ export default function BlogListPage({ serverPosts, serverFeatured }: BlogListPa
     setPage((p) => p + 1);
   }
 
-  const hasMore = postsPage?.hasMore ?? false;
+  const hasMore = (postsPage?.hasMore ?? false) && allPosts.length > 0;
 
   return (
     <PublicLayout>
@@ -387,7 +409,7 @@ export default function BlogListPage({ serverPosts, serverFeatured }: BlogListPa
         </div>
 
         {/* Posts grid */}
-        {isLoading && page === 0 ? (
+        {isLoading && page === 0 && allPosts.length === 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {Array.from({ length: 6 }).map((_, i) => (
               <BlogCardSkeleton key={i} />

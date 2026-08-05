@@ -1,13 +1,14 @@
 import { supabase } from './supabase-server';
 import type { BlogDetail, BlogSummary, FaqItem } from '../types/blog';
 
+const BACKEND_URL =
+  process.env.BACKEND_URL ||
+  'https://aurawealth-backend-production-2faa.up.railway.app';
+
 // ─── Column list (avoids fetching the large 'content' field for summaries) ────
 
 const SUMMARY_COLUMNS =
   'id, slug, title, excerpt, cover_image_url, author_name, tags, category, post_type, featured, reading_time_min, published_at';
-
-const DETAIL_COLUMNS =
-  '*, faq_items';
 
 // ─── Row → TypeScript mappers ────────────────────────────────────────────────
 
@@ -47,21 +48,75 @@ function toDetail(row: Record<string, unknown>, related: BlogSummary[]): BlogDet
   };
 }
 
-// ─── Public query functions (used by server components) ──────────────────────
+// ─── API fallbacks (used when Supabase schema is not yet exposed) ─────────────
+
+async function apiGetPost(slug: string): Promise<BlogDetail | null> {
+  try {
+    const res = await fetch(`${BACKEND_URL}/api/v1/blog/${slug}`, {
+      next: { revalidate: 600 },
+    });
+    if (!res.ok) return null;
+    const json = await res.json();
+    return json.data ?? json;
+  } catch {
+    return null;
+  }
+}
+
+async function apiListPosts(
+  page: number,
+  size: number,
+  category?: string,
+): Promise<{ items: BlogSummary[]; hasMore: boolean; total: number }> {
+  try {
+    const sp = new URLSearchParams({ page: String(page), size: String(size) });
+    if (category) sp.set('category', category);
+    const res = await fetch(`${BACKEND_URL}/api/v1/blog?${sp}`, {
+      next: { revalidate: 300 },
+    });
+    if (!res.ok) return { items: [], hasMore: false, total: 0 };
+    const json = await res.json();
+    const data = json.data ?? json;
+    return {
+      items: data.items ?? [],
+      hasMore: data.hasMore ?? false,
+      total: data.total ?? 0,
+    };
+  } catch {
+    return { items: [], hasMore: false, total: 0 };
+  }
+}
+
+async function apiFeaturedPosts(): Promise<BlogSummary[]> {
+  try {
+    const res = await fetch(`${BACKEND_URL}/api/v1/blog/featured`, {
+      next: { revalidate: 300 },
+    });
+    if (!res.ok) return [];
+    const json = await res.json();
+    return json.data ?? json;
+  } catch {
+    return [];
+  }
+}
+
+// ─── Public query functions ──────────────────────────────────────────────────
 
 /** Fetch a single published blog post by slug, with related posts. */
 export async function getPostBySlug(slug: string): Promise<BlogDetail | null> {
   const { data: row, error } = await supabase
     .schema('blog')
     .from('posts')
-    .select(DETAIL_COLUMNS)
+    .select('*, faq_items')
     .eq('slug', slug)
     .eq('status', 'PUBLISHED')
     .single();
 
-  if (error || !row) return null;
+  if (error || !row) {
+    // Supabase schema not exposed yet — fall back to API
+    return apiGetPost(slug);
+  }
 
-  // Fetch related: same category, exclude self, limit 3
   let related: BlogSummary[] = [];
   if (row.category) {
     const { data: relRows } = await supabase
@@ -79,7 +134,7 @@ export async function getPostBySlug(slug: string): Promise<BlogDetail | null> {
   return toDetail(row as Record<string, unknown>, related);
 }
 
-/** Fetch paginated published blog posts (for listing page). */
+/** Fetch paginated published blog posts. */
 export async function listPosts(
   page: number = 0,
   size: number = 9,
@@ -93,13 +148,14 @@ export async function listPosts(
     .order('published_at', { ascending: false })
     .range(page * size, (page + 1) * size - 1);
 
-  if (category) {
-    query = query.eq('category', category);
-  }
+  if (category) query = query.eq('category', category);
 
   const { data: rows, count, error } = await query;
 
-  if (error || !rows) return { items: [], hasMore: false, total: 0 };
+  if (error || !rows) {
+    // Supabase schema not exposed yet — fall back to API
+    return apiListPosts(page, size, category);
+  }
 
   const total = count ?? 0;
   return {
@@ -119,6 +175,10 @@ export async function getFeaturedPosts(): Promise<BlogSummary[]> {
     .eq('featured', true)
     .order('published_at', { ascending: false });
 
-  if (error || !rows) return [];
+  if (error || !rows) {
+    // Supabase schema not exposed yet — fall back to API
+    return apiFeaturedPosts();
+  }
+
   return rows.map((r: Record<string, unknown>) => toSummary(r));
 }
