@@ -1,12 +1,19 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import BlogDetailPage from '../../../src/views/Blog/BlogDetailPage';
-import { getPostBySlug } from '../../../src/lib/blog-queries';
+import { getPostBySlug, getAllSlugs } from '../../../src/lib/blog-queries';
 import type { BlogDetail } from '../../../src/types/blog';
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://creditbrain.in';
 
 export const revalidate = 600; // ISR: revalidate every 10 minutes
+
+/** Pre-build all known blog slugs at build time. New slugs are rendered on
+ *  first request and then cached by ISR. */
+export async function generateStaticParams() {
+  const slugs = await getAllSlugs();
+  return slugs.map((slug) => ({ slug }));
+}
 
 export async function generateMetadata({
   params,

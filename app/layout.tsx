@@ -80,13 +80,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="shortcut icon" href="/favicon.ico" />
         <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
         <link rel="manifest" href="/site.webmanifest" />
-        {/* Material Symbols kept as external — variable axes unsupported by next/font */}
+        {/* Material Symbols: preconnect early, load non-blocking via Script below */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
-          rel="stylesheet"
-        />
         {/* Server-rendered structured data — visible to Googlebot on first crawl */}
         <script
           type="application/ld+json"
@@ -99,6 +95,17 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body>
         <Providers>{children}</Providers>
+        {/* Material Symbols: load stylesheet after interactive to avoid render-blocking.
+            globals.css hides icon text (visibility:hidden) until ms-ready class is added. */}
+        <Script id="load-material-symbols" strategy="afterInteractive">
+          {`(function(){
+            var l=document.createElement('link');
+            l.rel='stylesheet';
+            l.href='https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200';
+            l.onload=function(){document.documentElement.classList.add('ms-ready');};
+            document.head.appendChild(l);
+          })();`}
+        </Script>
         {/* Google Analytics — loads after page is interactive, never blocks render */}
         <Script
           src="https://www.googletagmanager.com/gtag/js?id=G-WZ2BE0GHRC"

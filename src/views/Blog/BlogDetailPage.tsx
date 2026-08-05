@@ -360,6 +360,8 @@ export default function BlogDetailPage({ serverPost }: BlogDetailPageProps) {
             src={post.coverImageUrl}
             alt={post.title}
             className="w-full h-full object-cover"
+            fetchPriority="high"
+            loading="eager"
           />
         </div>
       ) : (

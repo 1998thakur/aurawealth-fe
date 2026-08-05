@@ -20,6 +20,14 @@
     font-size: 24px;
     line-height: 1;
     user-select: none;
+    /* Keep element dimensions while font loads — prevents layout shift.
+       Text content (ligature name) is hidden until ms-ready class is added. */
+    visibility: hidden;
+  }
+
+  /* Font is loaded — reveal icons */
+  html.ms-ready .material-symbols-outlined {
+    visibility: visible;
   }
 
   .material-symbols-filled {
@@ -27,6 +35,11 @@
     font-size: 24px;
     line-height: 1;
     user-select: none;
+    visibility: hidden;
+  }
+
+  html.ms-ready .material-symbols-filled {
+    visibility: visible;
   }
 
   .btn-primary {
